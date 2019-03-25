@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">ToDoApp</string>
+    <string name="title_todo_detail">ToDo Detail</string>
+    <string name="facebook_application_id" translatable="false">403878970424703</string>
+    <string name="facebook_login_protocol_scheme" translatable="false">fb403878970424703</string>
+    <string name="signout">SignOut</string>
+
+    <string name="title_activity_fullscreen">FullscreenActivity</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+</resources>
