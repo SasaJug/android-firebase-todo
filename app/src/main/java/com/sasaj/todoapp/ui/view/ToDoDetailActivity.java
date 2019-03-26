@@ -13,8 +13,10 @@ import com.sasaj.todoapp.ui.common.BaseActivity;
 import com.sasaj.todoapp.ui.edit.EditToDoDetailActivity;
 import com.sasaj.todoapp.ui.list.ToDoListActivity;
 
+import static com.sasaj.todoapp.ui.view.ToDoDetailFragment.*;
+
 /**
- * An activity representing a single Item detail screen. This
+ * An activity representing a single _Todo detail screen. This
  * activity is only used on narrow width devices. On tablet-size devices,
  * item details are presented side-by-side with a list of items
  * in a {@link ToDoListActivity}.
@@ -28,12 +30,17 @@ public class ToDoDetailActivity extends BaseActivity {
         Toolbar toolbar = findViewById(R.id.detail_toolbar);
         setSupportActionBar(toolbar);
 
+        String todoKey = getIntent().getStringExtra(ARG_TODO_KEY);
+        if (todoKey == null) {
+            throw new IllegalArgumentException("Must pass TODO_KEY");
+        }
+
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(ToDoDetailActivity.this, EditToDoDetailActivity.class);
-                intent.putExtra(ToDoDetailFragment.ARG_ITEM_ID, getIntent().getStringExtra(ToDoDetailFragment.ARG_ITEM_ID));
+                intent.putExtra(ARG_TODO_KEY, getIntent().getStringExtra(ARG_TODO_KEY));
                 startActivity(intent);
             }
         });
@@ -46,8 +53,7 @@ public class ToDoDetailActivity extends BaseActivity {
 
         if (savedInstanceState == null) {
             Bundle arguments = new Bundle();
-            arguments.putString(ToDoDetailFragment.ARG_ITEM_ID,
-                    getIntent().getStringExtra(ToDoDetailFragment.ARG_ITEM_ID));
+            arguments.putString(ARG_TODO_KEY, todoKey );
             ToDoDetailFragment fragment = new ToDoDetailFragment();
             fragment.setArguments(arguments);
             getSupportFragmentManager().beginTransaction()

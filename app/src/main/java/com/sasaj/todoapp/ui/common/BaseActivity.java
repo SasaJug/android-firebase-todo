@@ -6,6 +6,7 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -14,7 +15,11 @@ import com.firebase.ui.auth.IdpResponse;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.sasaj.todoapp.R;
+import com.sasaj.todoapp.entity.User;
 import com.sasaj.todoapp.ui.list.ToDoListActivity;
 
 import java.util.Arrays;
@@ -23,6 +28,7 @@ import java.util.List;
 public abstract class BaseActivity extends AppCompatActivity {
 
     private static final int RC_SIGN_IN = 101;
+    private static final String TAG = BaseActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -55,10 +61,11 @@ public abstract class BaseActivity extends AppCompatActivity {
         if (requestCode == RC_SIGN_IN) {
             IdpResponse response = IdpResponse.fromResultIntent(data);
 
+
             if (resultCode == RESULT_OK) {
-                if(this instanceof ToDoListActivity){
+                    FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                    writeNewUser(user.getUid(), usernameFromEmail(user.getEmail()), user.getEmail() );
                     setContent();
-                }
             } else {
                 finish();
             }
@@ -122,6 +129,25 @@ public abstract class BaseActivity extends AppCompatActivity {
 
         // show it
         alertDialog.show();
+    }
+
+    private void writeNewUser(String userId, String name, String email) {
+        User user = new User(name, email);
+        DatabaseReference db = FirebaseDatabase.getInstance().getReference();
+        db.child("users").child(userId).setValue(user);
+    }
+
+
+    private String usernameFromEmail(String email) {
+        if(email != null){
+            if (email.contains("@")) {
+                return email.split("@")[0];
+            } else {
+                return email;
+            }
+        } else {
+            return "";
+        }
     }
 
     protected void setContent(){}

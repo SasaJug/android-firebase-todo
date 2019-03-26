@@ -2,55 +2,28 @@ package com.sasaj.todoapp.ui.list;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.firebase.ui.database.FirebaseRecyclerAdapter;
+import com.firebase.ui.database.FirebaseRecyclerOptions;
+import com.google.firebase.database.DatabaseReference;
 import com.sasaj.todoapp.R;
+import com.sasaj.todoapp.entity.ToDo;
 import com.sasaj.todoapp.ui.view.ToDoDetailActivity;
 import com.sasaj.todoapp.ui.view.ToDoDetailFragment;
-import com.sasaj.todoapp.entity.ToDo;
 
-import java.util.ArrayList;
-import java.util.List;
+public class SimpleItemRecyclerViewAdapter extends FirebaseRecyclerAdapter<ToDo, SimpleItemRecyclerViewAdapter.ViewHolder> {
 
-public class SimpleItemRecyclerViewAdapter
-        extends RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder> {
 
-    private final ToDoListActivity mParentActivity;
-    private List<ToDo> mValues ;
-    private final boolean mTwoPane;
-    private final View.OnClickListener mOnClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View view) {
-            ToDo item = (ToDo) view.getTag();
-            if (mTwoPane) {
-                Bundle arguments = new Bundle();
-                arguments.putLong(ToDoDetailFragment.ARG_ITEM_ID, item.getId());
-                ToDoDetailFragment fragment = new ToDoDetailFragment();
-                fragment.setArguments(arguments);
-                mParentActivity.getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.todo_detail_container, fragment)
-                        .commit();
-            } else {
-                Context context = view.getContext();
-                Intent intent = new Intent(context, ToDoDetailActivity.class);
-                intent.putExtra(ToDoDetailFragment.ARG_ITEM_ID, item.getId());
-
-                context.startActivity(intent);
-            }
-        }
-    };
-
-    SimpleItemRecyclerViewAdapter(ToDoListActivity parent,
-                                  boolean twoPane) {
-        mParentActivity = parent;
-        mValues = new ArrayList<>();
-        mTwoPane = twoPane;
+    public SimpleItemRecyclerViewAdapter(@NonNull FirebaseRecyclerOptions<ToDo> options) {
+        super(options);
     }
+
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -60,24 +33,35 @@ public class SimpleItemRecyclerViewAdapter
     }
 
     @Override
-    public void onBindViewHolder(final ViewHolder holder, int position) {
-        ToDo toDo = mValues.get(position);
-        holder.title.setText(toDo.getTitle());
-        holder.description.setText(toDo.getDescription());
+    protected void onBindViewHolder(@NonNull ViewHolder holder, int position, @NonNull ToDo model) {
+        final DatabaseReference todoRef = getRef(position);
+        final String todoKey = todoRef.getKey();
 
-        holder.itemView.setTag(toDo);
-        holder.itemView.setOnClickListener(mOnClickListener);
+        holder.title.setText(model.title);
+        holder.description.setText(model.description);
+        holder.itemView.setTag(model);
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+//            if (mTwoPane) {
+//                Bundle arguments = new Bundle();
+//                arguments.putString(ToDoDetailFragment.ARG_TODO_KEY, item.timestamp);
+//                ToDoDetailFragment fragment = new ToDoDetailFragment();
+//                fragment.setArguments(arguments);
+//                mParentActivity.getSupportFragmentManager().beginTransaction()
+//                        .replace(R.id.todo_detail_container, fragment)
+//                        .commit();
+//            } else {
+                Context context = view.getContext();
+                Intent intent = new Intent(context, ToDoDetailActivity.class);
+                intent.putExtra(ToDoDetailFragment.ARG_TODO_KEY, todoKey);
+
+                context.startActivity(intent);
+            }
+//        }
+        });
     }
 
-    public void setToDos(List<ToDo> toDos){
-        this.mValues = toDos;
-        notifyDataSetChanged();
-    }
-
-    @Override
-    public int getItemCount() {
-        return mValues.size();
-    }
 
     class ViewHolder extends RecyclerView.ViewHolder {
         final TextView title;

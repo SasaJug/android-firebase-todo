@@ -4,22 +4,22 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 
+import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.sasaj.todoapp.R;
-import com.sasaj.todoapp.ui.edit.EditToDoDetailActivity;
-import com.sasaj.todoapp.ui.view.ToDoDetailActivity;
+import com.sasaj.todoapp.data.Repository;
 import com.sasaj.todoapp.entity.ToDo;
 import com.sasaj.todoapp.ui.common.BaseActivity;
-import com.sasaj.todoapp.ui.view.ToDoDetailFragment;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.sasaj.todoapp.ui.edit.EditToDoDetailActivity;
+import com.sasaj.todoapp.ui.view.ToDoDetailActivity;
 
 /**
  * An activity representing a list of ToDos. This activity
@@ -36,7 +36,7 @@ public class ToDoListActivity extends BaseActivity {
      * device.
      */
     private boolean mTwoPane;
-    private SimpleItemRecyclerViewAdapter simpleItemRecyclerViewAdapter;
+    private SimpleItemRecyclerViewAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,25 +65,41 @@ public class ToDoListActivity extends BaseActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        if(FirebaseAuth.getInstance().getCurrentUser() != null){
+        if (FirebaseAuth.getInstance().getCurrentUser() != null) {
             setContent();
         }
     }
 
-    private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
-        simpleItemRecyclerViewAdapter = new SimpleItemRecyclerViewAdapter(this, mTwoPane);
-        recyclerView.setAdapter(simpleItemRecyclerViewAdapter);
-        List<ToDo> todos = new ArrayList<ToDo>();
-        todos.add(new ToDo("Title1", "Description lorem ipsum 1", System.currentTimeMillis()));
-        todos.add(new ToDo("Title2", "Description lorem ipsum 2", System.currentTimeMillis()));
-        simpleItemRecyclerViewAdapter.setToDos(todos);
+    @Override
+    protected void onStop() {
+        if (adapter != null) {
+            adapter.stopListening();
+        }
+        super.onStop();
     }
 
-    protected void setContent(){
+    protected void setContent() {
         RecyclerView recyclerView = findViewById(R.id.todo_list);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        assert recyclerView != null;
+        recyclerView.setHasFixedSize(true);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
+        linearLayoutManager.setReverseLayout(true);
+        linearLayoutManager.setStackFromEnd(true);
+        recyclerView.setLayoutManager(linearLayoutManager);
         setupRecyclerView(recyclerView);
+    }
+
+
+    private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
+        DatabaseReference database = Repository.getDatabase().getReference();
+        Query todosQuery = database.child("user-todos").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
+
+        FirebaseRecyclerOptions options = new FirebaseRecyclerOptions.Builder<ToDo>()
+                .setQuery(todosQuery, ToDo.class)
+                .build();
+
+        adapter = new SimpleItemRecyclerViewAdapter(options);
+        recyclerView.setAdapter(adapter);
+        adapter.startListening();
     }
 
 }
