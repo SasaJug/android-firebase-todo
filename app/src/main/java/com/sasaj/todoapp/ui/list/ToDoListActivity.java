@@ -1,4 +1,4 @@
-package com.sasaj.todoapp;
+package com.sasaj.todoapp.ui.list;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -11,8 +11,12 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 
 import com.google.firebase.auth.FirebaseAuth;
-import com.sasaj.todoapp.dummy.DummyContent;
+import com.sasaj.todoapp.R;
+import com.sasaj.todoapp.ui.edit.EditToDoDetailActivity;
+import com.sasaj.todoapp.ui.view.ToDoDetailActivity;
 import com.sasaj.todoapp.entity.ToDo;
+import com.sasaj.todoapp.ui.common.BaseActivity;
+import com.sasaj.todoapp.ui.view.ToDoDetailFragment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,8 +51,8 @@ public class ToDoListActivity extends BaseActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                Intent intent = new Intent(ToDoListActivity.this, EditToDoDetailActivity.class);
+                startActivity(intent);
             }
         });
 

@@ -1,4 +1,4 @@
-package com.sasaj.todoapp;
+package com.sasaj.todoapp.ui.list;
 
 import android.content.Context;
 import android.content.Intent;
@@ -9,7 +9,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.sasaj.todoapp.dummy.DummyContent;
+import com.sasaj.todoapp.R;
+import com.sasaj.todoapp.ui.view.ToDoDetailActivity;
+import com.sasaj.todoapp.ui.view.ToDoDetailFragment;
 import com.sasaj.todoapp.entity.ToDo;
 
 import java.util.ArrayList;

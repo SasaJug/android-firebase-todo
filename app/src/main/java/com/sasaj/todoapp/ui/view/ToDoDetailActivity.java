@@ -1,17 +1,20 @@
-package com.sasaj.todoapp;
+package com.sasaj.todoapp.ui.view;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v7.widget.Toolbar;
-import android.view.View;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.ActionBar;
+import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
+import android.view.View;
+
+import com.sasaj.todoapp.R;
+import com.sasaj.todoapp.ui.common.BaseActivity;
+import com.sasaj.todoapp.ui.edit.EditToDoDetailActivity;
+import com.sasaj.todoapp.ui.list.ToDoListActivity;
 
 /**
- * An activity representing a single ToDo detail screen. This
+ * An activity representing a single Item detail screen. This
  * activity is only used on narrow width devices. On tablet-size devices,
  * item details are presented side-by-side with a list of items
  * in a {@link ToDoListActivity}.
@@ -29,8 +32,9 @@ public class ToDoDetailActivity extends BaseActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own detail action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                Intent intent = new Intent(ToDoDetailActivity.this, EditToDoDetailActivity.class);
+                intent.putExtra(ToDoDetailFragment.ARG_ITEM_ID, getIntent().getStringExtra(ToDoDetailFragment.ARG_ITEM_ID));
+                startActivity(intent);
             }
         });
 

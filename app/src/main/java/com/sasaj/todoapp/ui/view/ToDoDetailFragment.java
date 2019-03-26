@@ -1,4 +1,4 @@
-package com.sasaj.todoapp;
+package com.sasaj.todoapp.ui.view;
 
 import android.app.Activity;
 import android.support.design.widget.CollapsingToolbarLayout;
@@ -9,8 +9,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.sasaj.todoapp.dummy.DummyContent;
+import com.sasaj.todoapp.R;
 import com.sasaj.todoapp.entity.ToDo;
+import com.sasaj.todoapp.ui.list.ToDoListActivity;
 
 /**
  * A fragment representing a single ToDo detail screen.

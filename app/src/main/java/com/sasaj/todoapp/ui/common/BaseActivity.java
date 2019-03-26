@@ -1,4 +1,4 @@
-package com.sasaj.todoapp;
+package com.sasaj.todoapp.ui.common;
 
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -10,12 +10,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.firebase.ui.auth.AuthUI;
-import com.firebase.ui.auth.ErrorCodes;
 import com.firebase.ui.auth.IdpResponse;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
+import com.sasaj.todoapp.R;
+import com.sasaj.todoapp.ui.list.ToDoListActivity;
 
 import java.util.Arrays;
 import java.util.List;
