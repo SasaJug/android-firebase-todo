@@ -16,6 +16,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.sasaj.todoapp.R;
 import com.sasaj.todoapp.data.Repository;
@@ -35,7 +36,7 @@ public class ToDoDetailFragment extends Fragment {
      */
     public static final String ARG_TODO_KEY = "TODO_KEY";
     private static final String TAG = ToDoDetailFragment.class.getSimpleName();
-    private DatabaseReference todoReference;
+    private Query todoReference;
     private String todoKey;
     private View rootView;
     private ValueEventListener todoListener;
@@ -53,11 +54,7 @@ public class ToDoDetailFragment extends Fragment {
 
         if (getArguments().containsKey(ARG_TODO_KEY)) {
             todoKey = getArguments().getString(ARG_TODO_KEY);
-
-            String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-
-            todoReference = Repository.getDatabase().getReference("user-todos")
-                    .child(uid).child(todoKey);
+            todoReference = Repository.INSTANCE().getQueryForSingleUserTodo(todoKey);
         }
     }
 

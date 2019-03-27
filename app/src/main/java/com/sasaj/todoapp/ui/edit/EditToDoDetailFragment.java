@@ -16,6 +16,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.sasaj.todoapp.R;
 import com.sasaj.todoapp.data.Repository;
@@ -42,7 +43,7 @@ public class EditToDoDetailFragment extends Fragment {
     private Button cancelButton;
 
     private DatabaseReference database;
-    private DatabaseReference todoReference;
+    private Query todoReference;
     private String todoKey;
     private View rootView;
     /**
@@ -66,8 +67,7 @@ public class EditToDoDetailFragment extends Fragment {
         if (getArguments() != null && getArguments().containsKey(ARG_TODO_KEY)) {
             todoKey = getArguments().getString(ARG_TODO_KEY);
 
-            todoReference = Repository.getDatabase().getReference("user-todos")
-                    .child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child(todoKey);
+            todoReference = Repository.INSTANCE().getQueryForSingleUserTodo(todoKey);
         }
     }
 
@@ -84,19 +84,9 @@ public class EditToDoDetailFragment extends Fragment {
         saveButton = rootView.findViewById(R.id.saveButton);
         cancelButton = rootView.findViewById(R.id.cancelButton);
 
-        saveButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                saveToDo();
-            }
-        });
+        saveButton.setOnClickListener(view -> saveToDo());
 
-        cancelButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                cancel();
-            }
-        });
+        cancelButton.setOnClickListener(view -> cancel());
 
         return rootView;
     }
@@ -134,8 +124,9 @@ public class EditToDoDetailFragment extends Fragment {
                         Toast.LENGTH_SHORT).show();
             }
         };
-        if (todoKey != null)
+        if (todoKey != null){
             todoReference.addValueEventListener(todoListener);
+        }
     }
 
 
@@ -151,9 +142,7 @@ public class EditToDoDetailFragment extends Fragment {
             return;
         } else {
 
-            database = Repository.getDatabase().getReference();
-            final String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-            database.child("users").child(userId).addListenerForSingleValueEvent(
+            Repository.INSTANCE().getQueryForUsers().addListenerForSingleValueEvent(
                     new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
@@ -163,13 +152,13 @@ public class EditToDoDetailFragment extends Fragment {
                             // [START_EXCLUDE]
                             if (user == null) {
                                 // User is null, error out
-                                Log.e(TAG, "User " + userId + " is unexpectedly null");
+                                Log.e(TAG, "User " + user.name + " is unexpectedly null");
                                 Toast.makeText(getActivity(),
                                         "Error: could not fetch user.",
                                         Toast.LENGTH_SHORT).show();
                             } else {
                                 // Write new post
-                                writeNewTodo(userId, title.getText().toString(), description.getText().toString());
+                                Repository.INSTANCE().writeNewTodo(title.getText().toString(), description.getText().toString(), todoKey);
                             }
 
                             setEditingEnabled(true);
@@ -213,21 +202,5 @@ public class EditToDoDetailFragment extends Fragment {
     private void resetErrors() {
         titleLayout.setError(null);
         descriptionLayout.setError(null);
-    }
-
-    private void writeNewTodo(String userId, String title, String description) {
-        String timestamp = Long.toString(System.currentTimeMillis());
-        ToDo toDo = new ToDo(userId, title, description, timestamp);
-
-        if(todoKey == null){
-            todoKey = database.child("todos").push().getKey();
-        }
-        Map<String, Object> postValues = toDo.toMap();
-
-        Map<String, Object> childUpdates = new HashMap<>();
-        childUpdates.put("/todos/" + todoKey, postValues);
-        childUpdates.put("/user-todos/" + userId + "/" + todoKey, postValues);
-
-        database.updateChildren(childUpdates);
     }
 }

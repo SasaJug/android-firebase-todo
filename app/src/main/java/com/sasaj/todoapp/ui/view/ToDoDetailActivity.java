@@ -36,13 +36,10 @@ public class ToDoDetailActivity extends BaseActivity {
         }
 
         FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(ToDoDetailActivity.this, EditToDoDetailActivity.class);
-                intent.putExtra(ARG_TODO_KEY, getIntent().getStringExtra(ARG_TODO_KEY));
-                startActivity(intent);
-            }
+        fab.setOnClickListener(view -> {
+            Intent intent = new Intent(ToDoDetailActivity.this, EditToDoDetailActivity.class);
+            intent.putExtra(ARG_TODO_KEY, getIntent().getStringExtra(ARG_TODO_KEY));
+            startActivity(intent);
         });
 
         // Show the Up button in the action bar.

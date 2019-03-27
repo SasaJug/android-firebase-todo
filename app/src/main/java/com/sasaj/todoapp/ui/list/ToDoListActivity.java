@@ -35,7 +35,6 @@ public class ToDoListActivity extends BaseActivity {
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
      * device.
      */
-    private boolean mTwoPane;
     private SimpleItemRecyclerViewAdapter adapter;
 
     @Override
@@ -48,17 +47,10 @@ public class ToDoListActivity extends BaseActivity {
         toolbar.setTitle(getTitle());
 
         FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(ToDoListActivity.this, EditToDoDetailActivity.class);
-                startActivity(intent);
-            }
+        fab.setOnClickListener(view -> {
+            Intent intent = new Intent(ToDoListActivity.this, EditToDoDetailActivity.class);
+            startActivity(intent);
         });
-
-        if (findViewById(R.id.todo_detail_container) != null) {
-            mTwoPane = true;
-        }
 
     }
 
@@ -90,14 +82,8 @@ public class ToDoListActivity extends BaseActivity {
 
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
-        DatabaseReference database = Repository.getDatabase().getReference();
-        Query todosQuery = database.child("user-todos").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
 
-        FirebaseRecyclerOptions options = new FirebaseRecyclerOptions.Builder<ToDo>()
-                .setQuery(todosQuery, ToDo.class)
-                .build();
-
-        adapter = new SimpleItemRecyclerViewAdapter(options);
+        adapter = new SimpleItemRecyclerViewAdapter(repository.getToDoListOptions());
         recyclerView.setAdapter(adapter);
         adapter.startListening();
     }
