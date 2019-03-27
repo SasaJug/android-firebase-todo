@@ -16,7 +16,6 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.sasaj.todoapp.R;
 import com.sasaj.todoapp.data.Repository;
@@ -26,15 +25,13 @@ import com.sasaj.todoapp.entity.User;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.sasaj.todoapp.ui.view.ToDoDetailFragment.ARG_TODO_KEY;
+
 /**
  * A fragment representing a single edit item detail screen.
  */
 public class EditToDoDetailFragment extends Fragment {
-    /**
-     * The fragment argument representing the item ID that this fragment
-     * represents.
-     */
-    public static final String ARG_ITEM_ID = "item_id";
+
     private static final String TAG = EditToDoDetailFragment.class.getSimpleName();
 
     private android.support.design.widget.TextInputLayout titleLayout;
@@ -45,11 +42,14 @@ public class EditToDoDetailFragment extends Fragment {
     private Button cancelButton;
 
     private DatabaseReference database;
-
+    private DatabaseReference todoReference;
+    private String todoKey;
+    private View rootView;
     /**
      * The item content this fragment is presenting.
      */
     private ToDo toDo;
+
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -62,29 +62,20 @@ public class EditToDoDetailFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Activity activity = this.getActivity();
-        Toolbar toolbar = activity.findViewById(R.id.toolbar);
 
+        if (getArguments() != null && getArguments().containsKey(ARG_TODO_KEY)) {
+            todoKey = getArguments().getString(ARG_TODO_KEY);
 
-        if (getArguments() != null && getArguments().containsKey(ARG_ITEM_ID)) {
-            // Load the dummy content specified by the fragment
-            // arguments. In a real-world scenario, use a Loader
-            // to load content from a content provider.
-            toDo = new ToDo("111", "title", "description", "111222333");
-            if (toolbar != null) {
-                toolbar.setTitle(toDo.title);
-            }
-        } else {
-            if (toolbar != null) {
-                toolbar.setTitle("Create new todo");
-            }
+            todoReference = Repository.getDatabase().getReference("user-todos")
+                    .child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child(todoKey);
         }
     }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.edit_todo_detail, container, false);
+        rootView = inflater.inflate(R.layout.edit_todo_detail, container, false);
 
         title = rootView.findViewById(R.id.title);
         description = rootView.findViewById(R.id.description);
@@ -109,6 +100,44 @@ public class EditToDoDetailFragment extends Fragment {
 
         return rootView;
     }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        ValueEventListener todoListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                // Get _ToDo object and use the values to update the UI
+                toDo = dataSnapshot.getValue(ToDo.class);
+                if (toDo != null) {
+                    Activity activity = EditToDoDetailFragment.this.getActivity();
+                    if(activity != null){
+                        Toolbar toolbar = activity.findViewById(R.id.toolbar);
+                        if (toolbar != null) {
+                            toolbar.setTitle(toDo.title);
+                        }
+                        if (rootView != null) {
+                            ((EditText) rootView.findViewById(R.id.title)).setText(toDo.title);
+                            ((EditText) rootView.findViewById(R.id.description)).setText(toDo.description);
+                        }
+                    }
+
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                // Getting Post failed, log a message
+                Log.w(TAG, "loadPost:onCancelled", databaseError.toException());
+                Toast.makeText(EditToDoDetailFragment.this.getActivity(), "Failed to load post.",
+                        Toast.LENGTH_SHORT).show();
+            }
+        };
+        if (todoKey != null)
+            todoReference.addValueEventListener(todoListener);
+    }
+
 
     public void saveToDo() {
         resetErrors();
@@ -190,12 +219,14 @@ public class EditToDoDetailFragment extends Fragment {
         String timestamp = Long.toString(System.currentTimeMillis());
         ToDo toDo = new ToDo(userId, title, description, timestamp);
 
-        String key = database.child("todos").push().getKey();
+        if(todoKey == null){
+            todoKey = database.child("todos").push().getKey();
+        }
         Map<String, Object> postValues = toDo.toMap();
 
         Map<String, Object> childUpdates = new HashMap<>();
-        childUpdates.put("/todos/" + key, postValues);
-        childUpdates.put("/user-todos/" + userId + "/" + key, postValues);
+        childUpdates.put("/todos/" + todoKey, postValues);
+        childUpdates.put("/user-todos/" + userId + "/" + todoKey, postValues);
 
         database.updateChildren(childUpdates);
     }

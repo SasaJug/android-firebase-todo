@@ -14,4 +14,5 @@
     <string name="enter_description">Enter description</string>
     <string name="cancel">Cancel</string>
     <string name="save">Save</string>
+    <string name="create_new_todo_title">Create new Todo</string>
 </resources>

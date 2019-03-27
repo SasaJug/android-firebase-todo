@@ -13,6 +13,8 @@ import com.sasaj.todoapp.R;
 import com.sasaj.todoapp.ui.common.BaseActivity;
 import com.sasaj.todoapp.ui.list.ToDoListActivity;
 
+import static com.sasaj.todoapp.ui.view.ToDoDetailFragment.ARG_TODO_KEY;
+
 /**
  * An activity representing a single Edit Item detail screen.
  */
@@ -25,6 +27,8 @@ public class EditToDoDetailActivity extends BaseActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        String todoKey = getIntent().getStringExtra(ARG_TODO_KEY);
+
         // Show the Up button in the action bar.
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
@@ -34,10 +38,9 @@ public class EditToDoDetailActivity extends BaseActivity {
         if (savedInstanceState == null) {
 
             EditToDoDetailFragment fragment = new EditToDoDetailFragment();
-            if(getIntent().getStringExtra(EditToDoDetailFragment.ARG_ITEM_ID) != null){
+            if(todoKey != null){
                 Bundle arguments = new Bundle();
-                arguments.putString(EditToDoDetailFragment.ARG_ITEM_ID,
-                        getIntent().getStringExtra(EditToDoDetailFragment.ARG_ITEM_ID));
+                arguments.putString(ARG_TODO_KEY, todoKey);
                 fragment.setArguments(arguments);
             }
 
