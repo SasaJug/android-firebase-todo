@@ -1,5 +1,6 @@
 package com.sasaj.todoapp.data;
 
+import android.content.Context;
 import android.content.Intent;
 
 import com.firebase.ui.auth.AuthUI;
@@ -21,8 +22,6 @@ public class Repository{
 
     private static Repository INSTANCE;
 
-
-    private FirebaseAuth firebaseAuth;
     private FirebaseDatabase firebaseDatabase;
 
     public static Repository INSTANCE (){
@@ -33,13 +32,16 @@ public class Repository{
     }
 
     private Repository (){
-        firebaseAuth = FirebaseAuth.getInstance();
         firebaseDatabase = FirebaseDatabase.getInstance();
         firebaseDatabase.setPersistenceEnabled(true);
     }
 
+    public AuthUI getAuthUI(){
+        return AuthUI.getInstance();
+    }
+
     public FirebaseUser getCurrentUser(){
-        return firebaseAuth.getCurrentUser();
+        return FirebaseAuth.getInstance().getCurrentUser();
     }
 
     public Intent getAuthUIIntent(){
@@ -56,8 +58,12 @@ public class Repository{
                 .build();
     }
 
+    public void signOut(Context context){
+        AuthUI.getInstance().signOut(context);
+    }
+
     public void addUserToDatabase(){
-        FirebaseUser user = firebaseAuth.getCurrentUser();
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         writeNewUser(user.getUid(), usernameFromEmail(user.getEmail()), user.getEmail() );
     }
 
@@ -79,26 +85,25 @@ public class Repository{
         }
     }
 
-    public FirebaseRecyclerOptions getToDoListOptions(){
+    public FirebaseRecyclerOptions<ToDo> getToDoListOptions(){
         Query todosQuery = getQueryForUserTodos();
 
-        FirebaseRecyclerOptions options = new FirebaseRecyclerOptions.Builder<ToDo>()
+        return new FirebaseRecyclerOptions.Builder<ToDo>()
                 .setQuery(todosQuery, ToDo.class)
                 .build();
-        return options;
     }
 
 
     public Query getQueryForUsers() {
-        return firebaseDatabase.getReference().child("users").child(firebaseAuth.getCurrentUser().getUid());
+        return firebaseDatabase.getReference().child("users").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
     }
 
     public Query getQueryForUserTodos() {
-        return firebaseDatabase.getReference().child("user-todos").child(firebaseAuth.getCurrentUser().getUid());
+        return firebaseDatabase.getReference().child("user-todos").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
     }
 
     public Query getQueryForSingleUserTodo(String todoKey) {
-        return firebaseDatabase.getReference().child("user-todos").child(firebaseAuth.getCurrentUser().getUid()).child(todoKey);
+        return firebaseDatabase.getReference().child("user-todos").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child(todoKey);
     }
 
     public void writeNewTodo(String title, String description, String todoKey) {

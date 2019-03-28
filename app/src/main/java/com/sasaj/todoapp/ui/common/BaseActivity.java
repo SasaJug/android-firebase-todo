@@ -22,39 +22,6 @@ import java.util.List;
 
 public abstract class BaseActivity extends AppCompatActivity {
 
-    private static final int RC_SIGN_IN = 101;
-    private static final String TAG = BaseActivity.class.getSimpleName();
-    protected Repository repository;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
-        super.onCreate(savedInstanceState);
-        repository = Repository.INSTANCE();
-
-        if(repository.getCurrentUser() == null){
-            startActivityForResult(
-                    repository.getAuthUIIntent(),
-                    RC_SIGN_IN);
-        }
-    }
-
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == RC_SIGN_IN) {
-
-            if (resultCode == RESULT_OK) {
-                    repository.addUserToDatabase();
-                    setContent();
-            } else {
-                finish();
-            }
-        }
-    }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -85,7 +52,7 @@ public abstract class BaseActivity extends AppCompatActivity {
                 .setMessage(message)
                 .setCancelable(false)
                 .setPositiveButton("OK",
-                        (dialog, id) -> AuthUI.getInstance()
+                        (dialog, id) -> Repository.INSTANCE().getAuthUI()
                                 .signOut(BaseActivity.this)
                                 .addOnCompleteListener(task -> startActivity(new Intent (BaseActivity.this, ToDoListActivity.class)
                                         .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK))))

@@ -7,16 +7,9 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
 
-import com.firebase.ui.database.FirebaseRecyclerOptions;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
 import com.sasaj.todoapp.R;
 import com.sasaj.todoapp.data.Repository;
-import com.sasaj.todoapp.entity.ToDo;
 import com.sasaj.todoapp.ui.common.BaseActivity;
 import com.sasaj.todoapp.ui.edit.EditToDoDetailActivity;
 import com.sasaj.todoapp.ui.view.ToDoDetailActivity;
@@ -30,6 +23,8 @@ import com.sasaj.todoapp.ui.view.ToDoDetailActivity;
  * item details side-by-side using two vertical panes.
  */
 public class ToDoListActivity extends BaseActivity {
+
+    private static final int RC_SIGN_IN = 101;
 
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
@@ -52,12 +47,17 @@ public class ToDoListActivity extends BaseActivity {
             startActivity(intent);
         });
 
+        if (Repository.INSTANCE().getCurrentUser() == null) {
+            startActivityForResult(
+                    Repository.INSTANCE().getAuthUIIntent(),
+                    RC_SIGN_IN);
+        }
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+        if (Repository.INSTANCE().getCurrentUser() != null) {
             setContent();
         }
     }
@@ -68,6 +68,21 @@ public class ToDoListActivity extends BaseActivity {
             adapter.stopListening();
         }
         super.onStop();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == RC_SIGN_IN) {
+
+            if (resultCode == RESULT_OK) {
+                Repository.INSTANCE().addUserToDatabase();
+                setContent();
+            } else {
+                finish();
+            }
+        }
     }
 
     protected void setContent() {
@@ -82,8 +97,7 @@ public class ToDoListActivity extends BaseActivity {
 
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
-
-        adapter = new SimpleItemRecyclerViewAdapter(repository.getToDoListOptions());
+        adapter = new SimpleItemRecyclerViewAdapter(Repository.INSTANCE().getToDoListOptions());
         recyclerView.setAdapter(adapter);
         adapter.startListening();
     }
