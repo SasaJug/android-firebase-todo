@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">ToDoApp</string>
     <string name="title_todo_detail">ToDo Detail</string>
+    <string name="title_edit_todo_detail">Edit ToDo Detail</string>
+    <string name="title_created_todo_detail">Create ToDo Detail</string>
     <string name="facebook_application_id" translatable="false">403878970424703</string>
     <string name="facebook_login_protocol_scheme" translatable="false">fb403878970424703</string>
     <string name="signout">SignOut</string>
@@ -8,4 +10,11 @@
     <string name="title_activity_fullscreen">FullscreenActivity</string>
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="enter_title">Enter title</string>
+    <string name="enter_description">Enter description</string>
+    <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
+    <string name="create_new_todo_title">Create new Todo</string>
+    <string name="sign_out_title">Sign Out</string>
+    <string name="sign_out_question">Do you want to sign out?</string>
 </resources>

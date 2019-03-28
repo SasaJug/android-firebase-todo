@@ -1,37 +1,36 @@
 package com.sasaj.todoapp.entity;
 
+import com.google.firebase.database.Exclude;
+
+import java.util.HashMap;
+import java.util.Map;
+
 public class ToDo {
-    private String title;
-    private String description;
-    private long id;
+    public String userId;
+    public String title;
+    public String description;
+    public String timestamp;
 
-    public ToDo(String title, String description, long id) {
+    // Default constructor required for calls to DataSnapshot.getValue(ToDo.class)
+    public ToDo() {
+    }
+
+    public ToDo(String userId, String title, String description, String timestamp) {
+        this.userId = userId;
         this.title = title;
         this.description = description;
-        this.id = id;
+        this.timestamp = timestamp;
     }
 
-    public String getTitle() {
-        return title;
+    // [START post_to_map]
+    @Exclude
+    public Map<String, Object> toMap() {
+        HashMap<String, Object> result = new HashMap<>();
+        result.put("userId", userId);
+        result.put("title", title);
+        result.put("description", description);
+        result.put("timestamp", timestamp);
+        return result;
     }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
+    // [END post_to_map]
 }
