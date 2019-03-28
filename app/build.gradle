@@ -7,7 +7,7 @@ android {
         minSdkVersion 23
         targetSdkVersion 28
         versionCode 1
-        versionName "1.0"
+        versionName "1.0.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -15,6 +15,10 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 }
 
@@ -32,6 +36,13 @@ dependencies {
     implementation 'com.facebook.android:facebook-android-sdk:4.41.0'
     implementation 'com.google.firebase:firebase-database:16.1.0'
     implementation 'com.firebaseui:firebase-ui-database:4.3.1'
+
+    // architecture components
+    implementation "android.arch.lifecycle:runtime:$rootProject.ext.archRuntimeVersion"
+    implementation "android.arch.lifecycle:extensions:$rootProject.ext.archVersion"
+    implementation "android.arch.lifecycle:reactivestreams:$rootProject.ext.archVersion"
+    implementation "com.android.support.constraint:constraint-layout:$rootProject.ext.constraintLayoutVersion"
+    annotationProcessor "android.arch.lifecycle:compiler:$rootProject.ext.archRuntimeVersion"
 
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
