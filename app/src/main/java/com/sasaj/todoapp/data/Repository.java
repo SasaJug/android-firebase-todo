@@ -99,7 +99,8 @@ public class Repository{
     }
 
     public Query getQueryForUserTodos() {
-        return firebaseDatabase.getReference().child("user-todos").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).orderByChild("completed");
+        // Order by opposite property so completed todos go to the bottom of the list.
+        return firebaseDatabase.getReference().child("user-todos").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).orderByChild("opposite");
     }
 
     public Query getQueryForSingleUserTodo(String todoKey) {

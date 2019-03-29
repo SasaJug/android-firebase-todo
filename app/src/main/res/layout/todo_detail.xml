@@ -35,7 +35,7 @@
             android:layout_height="50dp"
             android:scaleType="centerInside"
             android:src="@drawable/ic_check_box_outline_blank_black_24dp"
-            android:tint="@color/colorAccent" />
+            android:tint="#D3D3D3" />
     </LinearLayout>
 
 </LinearLayout>
