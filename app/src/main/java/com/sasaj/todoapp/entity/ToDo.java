@@ -9,16 +9,18 @@ public class ToDo {
     public String userId;
     public String title;
     public String description;
+    public boolean completed;
     public String timestamp;
 
     // Default constructor required for calls to DataSnapshot.getValue(ToDo.class)
     public ToDo() {
     }
 
-    public ToDo(String userId, String title, String description, String timestamp) {
+    public ToDo(String userId, String title, String description, boolean completed, String timestamp) {
         this.userId = userId;
         this.title = title;
         this.description = description;
+        this.completed = completed;
         this.timestamp = timestamp;
     }
 
@@ -29,6 +31,7 @@ public class ToDo {
         result.put("userId", userId);
         result.put("title", title);
         result.put("description", description);
+        result.put("completed", completed);
         result.put("timestamp", timestamp);
         return result;
     }

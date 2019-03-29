@@ -10,9 +10,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -22,9 +22,6 @@ import com.sasaj.todoapp.R;
 import com.sasaj.todoapp.data.Repository;
 import com.sasaj.todoapp.entity.ToDo;
 import com.sasaj.todoapp.entity.User;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import static com.sasaj.todoapp.ui.view.ToDoDetailFragment.ARG_TODO_KEY;
 
@@ -39,10 +36,10 @@ public class EditToDoDetailFragment extends Fragment {
     private android.support.design.widget.TextInputLayout descriptionLayout;
     private EditText title;
     private EditText description;
+    private ImageView checkBox;
     private Button saveButton;
     private Button cancelButton;
 
-    private DatabaseReference database;
     private Query todoReference;
     private String todoKey;
     private View rootView;
@@ -50,6 +47,7 @@ public class EditToDoDetailFragment extends Fragment {
      * The item content this fragment is presenting.
      */
     private ToDo toDo;
+    private boolean completed = false;
 
 
     /**
@@ -81,8 +79,19 @@ public class EditToDoDetailFragment extends Fragment {
         description = rootView.findViewById(R.id.description);
         titleLayout = rootView.findViewById(R.id.titleLayout);
         descriptionLayout = rootView.findViewById(R.id.descriptionLayout);
+        checkBox = rootView.findViewById(R.id.checkBox);
         saveButton = rootView.findViewById(R.id.saveButton);
         cancelButton = rootView.findViewById(R.id.cancelButton);
+
+        checkBox.setImageResource(R.drawable.ic_check_box_outline_blank_black_24dp);
+        checkBox.setOnClickListener(view -> {
+            completed = !completed;
+            if (completed) {
+                checkBox.setImageResource(R.drawable.ic_check_box_black_24dp);
+            } else {
+                checkBox.setImageResource(R.drawable.ic_check_box_outline_blank_black_24dp);
+            }
+        });
 
         saveButton.setOnClickListener(view -> saveToDo());
 
@@ -102,17 +111,23 @@ public class EditToDoDetailFragment extends Fragment {
                 toDo = dataSnapshot.getValue(ToDo.class);
                 if (toDo != null) {
                     Activity activity = EditToDoDetailFragment.this.getActivity();
-                    if(activity != null){
+                    if (activity != null) {
                         Toolbar toolbar = activity.findViewById(R.id.toolbar);
                         if (toolbar != null) {
                             toolbar.setTitle(toDo.title);
                         }
                         if (rootView != null) {
-                            ((EditText) rootView.findViewById(R.id.title)).setText(toDo.title);
-                            ((EditText) rootView.findViewById(R.id.description)).setText(toDo.description);
+                            title.setText(toDo.title);
+                            description.setText(toDo.description);
+                            if (toDo.completed) {
+                                completed = true;
+                                checkBox.setImageResource(R.drawable.ic_check_box_black_24dp);
+                            } else {
+                                completed = false;
+                                checkBox.setImageResource(R.drawable.ic_check_box_outline_blank_black_24dp);
+                            }
                         }
                     }
-
                 }
             }
 
@@ -124,7 +139,7 @@ public class EditToDoDetailFragment extends Fragment {
                         Toast.LENGTH_SHORT).show();
             }
         };
-        if (todoKey != null){
+        if (todoKey != null) {
             todoReference.addValueEventListener(todoListener);
         }
     }
@@ -158,7 +173,7 @@ public class EditToDoDetailFragment extends Fragment {
                                         Toast.LENGTH_SHORT).show();
                             } else {
                                 // Write new post
-                                Repository.INSTANCE().writeNewTodo(title.getText().toString(), description.getText().toString(), todoKey);
+                                Repository.INSTANCE().writeNewTodo(title.getText().toString(), description.getText().toString(), completed, todoKey);
                             }
 
                             setEditingEnabled(true);
