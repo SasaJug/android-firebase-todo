@@ -99,16 +99,17 @@ public class Repository{
     }
 
     public Query getQueryForUserTodos() {
-        return firebaseDatabase.getReference().child("user-todos").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
+        // Order by opposite property so completed todos go to the bottom of the list.
+        return firebaseDatabase.getReference().child("user-todos").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).orderByChild("opposite");
     }
 
     public Query getQueryForSingleUserTodo(String todoKey) {
         return firebaseDatabase.getReference().child("user-todos").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child(todoKey);
     }
 
-    public void writeNewTodo(String title, String description, String todoKey) {
+    public void writeNewTodo(String title, String description, boolean completed, String todoKey) {
         String timestamp = Long.toString(System.currentTimeMillis());
-        ToDo toDo = new ToDo(getCurrentUser().getUid(), title, description, timestamp);
+        ToDo toDo = new ToDo(getCurrentUser().getUid(), title, description, completed, timestamp);
 
         if(todoKey == null){
             todoKey = firebaseDatabase.getReference().child("todos").push().getKey();

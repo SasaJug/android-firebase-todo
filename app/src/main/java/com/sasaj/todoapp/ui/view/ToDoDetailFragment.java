@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -75,6 +76,11 @@ public class ToDoDetailFragment extends Fragment {
                     }
                     if (rootView != null) {
                         ((TextView) rootView.findViewById(R.id.todo_detail)).setText(toDo.description);
+                        if(toDo.completed){
+                            ((ImageView) rootView.findViewById(R.id.checkBox_view)).setImageResource(R.drawable.ic_check_box_black_24dp);
+                        } else {
+                            ((ImageView) rootView.findViewById(R.id.checkBox_view)).setImageResource(R.drawable.ic_check_box_outline_blank_black_24dp);
+                        }
                     }
                 }
             }
