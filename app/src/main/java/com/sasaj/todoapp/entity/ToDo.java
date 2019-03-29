@@ -32,6 +32,8 @@ public class ToDo {
         result.put("title", title);
         result.put("description", description);
         result.put("completed", completed);
+        //Purpose of opposite property is to order todos so completed go to the bottom of the list.
+        result.put("opposite", !completed);
         result.put("timestamp", timestamp);
         return result;
     }
