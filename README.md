@@ -17,7 +17,9 @@ Simple Todo Android application with Firebase backend. Features:
 
 ## Important
 Google Sign-in will not work unless SHA certificate fingerprints (debug or release) are added to Firebase application settings, as described here:
-https://developers.google.com/android/guides/client-auth
+https://developers.google.com/android/guides/client-auth . It means that in order to test user login with Google you could use todoapp_v1.1.0.apk from release v1.1.0.
+Facebook application is since 03.04.2019. live and user login with Facebook is functional.
+
 
 ## Installation
 Clone this repository and import into **Android Studio**
