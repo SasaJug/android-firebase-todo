@@ -5,18 +5,22 @@ import android.arch.lifecycle.ViewModelProvider;
 import android.support.annotation.NonNull;
 
 import com.sasaj.todoapp.domain.usecases.EditToDoUseCase;
+import com.sasaj.todoapp.domain.usecases.GetToDoUseCase;
 
-public class EditTodoVMFactory implements ViewModelProvider.Factory {
+@SuppressWarnings("unchecked")
+public class EditToDoVMFactory implements ViewModelProvider.Factory {
 
     private EditToDoUseCase editToDoUseCase;
+    private GetToDoUseCase getToDoUseCase;
 
-    public EditTodoVMFactory(EditToDoUseCase editToDoUseCase) {
+    public EditToDoVMFactory(GetToDoUseCase getToDoUseCase, EditToDoUseCase editToDoUseCase) {
         this.editToDoUseCase = editToDoUseCase;
+        this.getToDoUseCase = getToDoUseCase;
     }
 
     @NonNull
     @Override
     public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
-        return (T) new EditTodoViewModel(editToDoUseCase);
+        return (T) new EditToDoViewModel(getToDoUseCase, editToDoUseCase);
     }
 }

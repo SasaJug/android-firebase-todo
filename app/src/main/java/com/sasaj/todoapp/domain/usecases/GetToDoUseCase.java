@@ -21,7 +21,7 @@ public class GetToDoUseCase  extends UseCase<ToDo> {
         this.repository = repository;
     }
 
-    public Observable<ToDo> getTodo(@Nullable String todoKey){
+    public Observable<ToDo> getTodo(String todoKey){
         Map<String, Object> data = new HashMap<>();
         data.put(PARAM_TODO_KEY, todoKey);
         return observable(data);

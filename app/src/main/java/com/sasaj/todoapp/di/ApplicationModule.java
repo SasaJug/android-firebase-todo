@@ -6,7 +6,9 @@ import com.sasaj.todoapp.data.RepositoryImpl;
 import com.sasaj.todoapp.domain.Repository;
 import com.sasaj.todoapp.domain.common.AsyncTransformer;
 import com.sasaj.todoapp.domain.usecases.EditToDoUseCase;
-import com.sasaj.todoapp.presentation.edit.EditTodoVMFactory;
+import com.sasaj.todoapp.domain.usecases.GetToDoUseCase;
+import com.sasaj.todoapp.presentation.edit.EditToDoVMFactory;
+import com.sasaj.todoapp.presentation.view.ToDoDetailVMFactory;
 
 import javax.inject.Singleton;
 
@@ -36,7 +38,19 @@ public class ApplicationModule {
 
     @Provides
     @Singleton
-    EditTodoVMFactory provideEditTodoViewModelFactory(EditToDoUseCase editToDoUseCase) {
-        return new EditTodoVMFactory(editToDoUseCase);
+    GetToDoUseCase provideGetTodoUseCase(Repository repository) {
+        return new GetToDoUseCase(repository, new AsyncTransformer());
+    }
+
+    @Provides
+    @Singleton
+    EditToDoVMFactory provideEditTodoViewModelFactory(GetToDoUseCase getToDoUseCase, EditToDoUseCase editToDoUseCase) {
+        return new EditToDoVMFactory(getToDoUseCase, editToDoUseCase);
+    }
+
+    @Provides
+    @Singleton
+    ToDoDetailVMFactory provideTodoDetailViewModelFactory(GetToDoUseCase getToDoUseCase) {
+        return new ToDoDetailVMFactory(getToDoUseCase);
     }
 }
