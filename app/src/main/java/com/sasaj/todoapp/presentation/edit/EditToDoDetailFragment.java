@@ -1,8 +1,10 @@
 package com.sasaj.todoapp.presentation.edit;
 
 import android.app.Activity;
+import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -19,10 +21,17 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.sasaj.todoapp.R;
-import com.sasaj.todoapp.data.Repository;
-import com.sasaj.todoapp.domain.ToDo;
-import com.sasaj.todoapp.domain.User;
+import com.sasaj.todoapp.TodoApplication;
+import com.sasaj.todoapp.data.RepositoryImpl;
+import com.sasaj.todoapp.domain.entities.ToDo;
+import com.sasaj.todoapp.presentation.common.BaseActivity;
 
+import javax.inject.Inject;
+
+import static com.sasaj.todoapp.presentation.edit.EditTodoViewState.COMPLETED;
+import static com.sasaj.todoapp.presentation.edit.EditTodoViewState.ERROR;
+import static com.sasaj.todoapp.presentation.edit.EditTodoViewState.LOADING;
+import static com.sasaj.todoapp.presentation.edit.EditTodoViewState.SUCCESS;
 import static com.sasaj.todoapp.presentation.view.ToDoDetailFragment.ARG_TODO_KEY;
 
 /**
@@ -61,15 +70,23 @@ public class EditToDoDetailFragment extends Fragment {
     public EditToDoDetailFragment() {
     }
 
+    @Inject
+    public EditTodoVMFactory editTodoVMFactory;
+
+    public EditTodoViewModel editTodoViewModel;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        ((TodoApplication) getActivity().getApplication()).applicationComponent.inject(this);
+
         if (getArguments() != null && getArguments().containsKey(ARG_TODO_KEY)) {
             todoKey = getArguments().getString(ARG_TODO_KEY);
-            todoQuery = Repository.INSTANCE().getQueryForSingleUserTodo(todoKey);
+            todoQuery = RepositoryImpl.INSTANCE().getQueryForSingleUserTodo(todoKey);
         }
-        userQuery = Repository.INSTANCE().getQueryForUsers();
+        userQuery = RepositoryImpl.INSTANCE().getQueryForUsers();
+
     }
 
 
@@ -97,10 +114,17 @@ public class EditToDoDetailFragment extends Fragment {
         });
 
         saveButton.setOnClickListener(view -> saveToDo());
-
         cancelButton.setOnClickListener(view -> cancel());
 
         return rootView;
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        editTodoViewModel = ViewModelProviders.of(this, editTodoVMFactory).get(EditTodoViewModel.class);
+        editTodoViewModel.editTodoLiveData.observe(getActivity(), this::handleViewState);
     }
 
     @Override
@@ -150,10 +174,10 @@ public class EditToDoDetailFragment extends Fragment {
     @Override
     public void onStop() {
         super.onStop();
-        if(todoQuery != null && todoListener != null){
+        if (todoQuery != null && todoListener != null) {
             todoQuery.removeEventListener(todoListener);
         }
-        if(userQuery != null && userListener != null){
+        if (userQuery != null && userListener != null) {
             userQuery.removeEventListener(userListener);
         }
     }
@@ -162,45 +186,16 @@ public class EditToDoDetailFragment extends Fragment {
         resetErrors();
         if (title.getText().toString().equals("") || description.getText().toString().equals("")) {
             if (title.getText().toString().equals("")) {
-                titleLayout.setError("Title must not be empty");
+                titleLayout.setError(getString(R.string.title_error_msg));
             }
             if (description.getText().toString().equals("")) {
-                descriptionLayout.setError("Description must not be empty");
+                descriptionLayout.setError(getString(R.string.description_error_msg));
             }
             return;
         } else {
 
             setEditingEnabled(false);
-            userListener = new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    // Get user value
-                    User user = dataSnapshot.getValue(User.class);
-
-                    if (user == null) {
-                        // User is null, error out
-                        Log.e(TAG, "User is unexpectedly null");
-                        Toast.makeText(getActivity(),
-                                "Error: could not fetch user.",
-                                Toast.LENGTH_SHORT).show();
-                    } else {
-                        // Write new todo
-                        Repository.INSTANCE().writeNewTodo(title.getText().toString(), description.getText().toString(), completed, todoKey);
-                    }
-
-                    setEditingEnabled(true);
-                    if (getActivity() != null) {
-                        getActivity().finish();
-                    }
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
-                    Log.w(TAG, "getUser:onCancelled", databaseError.toException());
-                    setEditingEnabled(true);
-                }
-            };
-            Repository.INSTANCE().getQueryForUsers().addListenerForSingleValueEvent(userListener);
+            editTodoViewModel.editToDo(todoKey, title.getText().toString(), description.getText().toString(), completed);
         }
     }
 
@@ -227,5 +222,33 @@ public class EditToDoDetailFragment extends Fragment {
     private void resetErrors() {
         titleLayout.setError(null);
         descriptionLayout.setError(null);
+    }
+
+    private void handleViewState(EditTodoViewState editTodoViewState) {
+        int state = editTodoViewState.state;
+        switch (state) {
+            case LOADING:
+                Log.i(TAG, "handleViewState: loading");
+                setEditingEnabled(false);
+                break;
+            case SUCCESS:
+                Log.e(TAG, "handleViewState: success");
+                setEditingEnabled(true);
+                if (getActivity() != null) {
+                    getActivity().finish();
+                }
+                break;
+            case ERROR:
+                Log.e(TAG, "handleViewState: error");
+                setEditingEnabled(true);
+                if (getActivity() != null) {
+                    ((BaseActivity) getActivity()).showErrorDialog(editTodoViewState.throwable);
+                }
+                break;
+            case COMPLETED:
+                Log.e(TAG, "handleViewState: completed");
+                setEditingEnabled(true);
+                break;
+        }
     }
 }

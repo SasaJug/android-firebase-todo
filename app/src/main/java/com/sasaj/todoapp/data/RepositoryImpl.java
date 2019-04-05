@@ -10,30 +10,34 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
-import com.sasaj.todoapp.domain.ToDo;
-import com.sasaj.todoapp.domain.User;
+import com.sasaj.todoapp.domain.Repository;
+import com.sasaj.todoapp.domain.entities.ToDo;
+import com.sasaj.todoapp.domain.entities.User;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Repository {
+import io.reactivex.Observable;
+import io.reactivex.annotations.Nullable;
 
-    private static Repository INSTANCE;
+public class RepositoryImpl implements Repository{
+
+    private static RepositoryImpl INSTANCE;
 
     private FirebaseDatabase firebaseDatabase;
 
-    public static Repository INSTANCE() {
+    public static RepositoryImpl INSTANCE() {
         if (INSTANCE == null) {
-            INSTANCE = new Repository();
+            INSTANCE = new RepositoryImpl();
         }
         return INSTANCE;
     }
 
-    private Repository() {
+    public RepositoryImpl() {
         firebaseDatabase = FirebaseDatabase.getInstance();
-        firebaseDatabase.setPersistenceEnabled(true);
+//        firebaseDatabase.setPersistenceEnabled(true);
     }
 
     public FirebaseUser getCurrentUser() {
@@ -88,14 +92,6 @@ public class Repository {
         }
     }
 
-    public Query getQueryForSingleUserTodo(String todoKey) {
-        if (getCurrentUser() != null) {
-            return firebaseDatabase.getReference().child("user-todos").child(getCurrentUser().getUid()).child(todoKey);
-        } else {
-            return null;
-        }
-    }
-
 
     public void writeNewTodo(String title, String description, boolean completed, String todoKey) {
         if (getCurrentUser() != null) {
@@ -133,5 +129,45 @@ public class Repository {
         return new FirebaseRecyclerOptions.Builder<ToDo>()
                 .setQuery(todosQuery, ToDo.class)
                 .build();
+    }
+
+
+    public Query getQueryForSingleUserTodo(String todoKey) {
+        if (getCurrentUser() != null) {
+            return firebaseDatabase.getReference().child("user-todos").child(getCurrentUser().getUid()).child(todoKey);
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public Observable<ToDo> getTodo(String todoKey) {
+        if (getCurrentUser() != null) {
+            return RxFirebase.getObservable(firebaseDatabase.getReference().child("user-todos").child(getCurrentUser().getUid()).child(todoKey), ToDo.class);
+        } else {
+            return Observable.error(new IllegalStateException("User is unexpectedly null."));
+        }
+    }
+
+    @Override
+    public Observable<Object> editTodo(@Nullable String todoKey, String title, String description, boolean completed) {
+        if (getCurrentUser() != null) {
+            String timestamp = Long.toString(System.currentTimeMillis());
+            ToDo toDo = new ToDo(getCurrentUser().getUid(), title, description, completed, timestamp);
+
+            if (todoKey == null) {
+                todoKey = firebaseDatabase.getReference().child("todos").push().getKey();
+            }
+
+            Map<String, Object> postValues = toDo.toMap();
+            Map<String, Object> childUpdates = new HashMap<>();
+            childUpdates.put("/todos/" + todoKey, postValues);
+            childUpdates.put("/user-todos/" + getCurrentUser().getUid() + "/" + todoKey, postValues);
+
+           return RxFirebase.getObservable(firebaseDatabase.getReference().updateChildren(childUpdates), true);
+        } else {
+            return Observable.error(new IllegalStateException("User is unexpectedly null."));
+
+        }
     }
 }

@@ -9,7 +9,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 
 import com.sasaj.todoapp.R;
-import com.sasaj.todoapp.data.Repository;
+import com.sasaj.todoapp.data.RepositoryImpl;
 import com.sasaj.todoapp.presentation.common.BaseActivity;
 import com.sasaj.todoapp.presentation.edit.EditToDoDetailActivity;
 import com.sasaj.todoapp.presentation.view.ToDoDetailActivity;
@@ -48,9 +48,9 @@ public class ToDoListActivity extends BaseActivity {
             startActivity(intent);
         });
 
-        if (Repository.INSTANCE().getCurrentUser() == null) {
+        if (RepositoryImpl.INSTANCE().getCurrentUser() == null) {
             startActivityForResult(
-                    Repository.INSTANCE().getAuthUIIntent(),
+                    RepositoryImpl.INSTANCE().getAuthUIIntent(),
                     RC_SIGN_IN);
         }
     }
@@ -58,7 +58,7 @@ public class ToDoListActivity extends BaseActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        if (Repository.INSTANCE().getCurrentUser() != null) {
+        if (RepositoryImpl.INSTANCE().getCurrentUser() != null) {
             setContent();
         }
     }
@@ -78,7 +78,7 @@ public class ToDoListActivity extends BaseActivity {
         if (requestCode == RC_SIGN_IN) {
 
             if (resultCode == RESULT_OK) {
-                Repository.INSTANCE().addUserToDatabase();
+                RepositoryImpl.INSTANCE().addUserToDatabase();
                 setContent();
             } else {
                 finish();
@@ -98,7 +98,7 @@ public class ToDoListActivity extends BaseActivity {
 
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
-        adapter = new SimpleItemRecyclerViewAdapter(Repository.INSTANCE().getToDoListOptions());
+        adapter = new SimpleItemRecyclerViewAdapter(RepositoryImpl.INSTANCE().getToDoListOptions());
         recyclerView.setAdapter(adapter);
         adapter.startListening();
     }

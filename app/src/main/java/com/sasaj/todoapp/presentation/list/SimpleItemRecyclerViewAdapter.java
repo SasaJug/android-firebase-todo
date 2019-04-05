@@ -14,8 +14,8 @@ import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.google.firebase.database.DatabaseReference;
 import com.sasaj.todoapp.R;
-import com.sasaj.todoapp.data.Repository;
-import com.sasaj.todoapp.domain.ToDo;
+import com.sasaj.todoapp.data.RepositoryImpl;
+import com.sasaj.todoapp.domain.entities.ToDo;
 import com.sasaj.todoapp.presentation.view.ToDoDetailActivity;
 import com.sasaj.todoapp.presentation.view.ToDoDetailFragment;
 
@@ -59,7 +59,7 @@ public class SimpleItemRecyclerViewAdapter extends FirebaseRecyclerAdapter<ToDo,
 
         holder.checkBox.setOnClickListener(view -> {
             model.completed = !model.completed;
-            Repository.INSTANCE().writeNewTodo(model.title, model.description, model.completed, todoKey);
+            RepositoryImpl.INSTANCE().writeNewTodo(model.title, model.description, model.completed, todoKey);
             notifyDataSetChanged();
         });
     }

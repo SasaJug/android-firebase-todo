@@ -18,8 +18,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.sasaj.todoapp.R;
-import com.sasaj.todoapp.data.Repository;
-import com.sasaj.todoapp.domain.ToDo;
+import com.sasaj.todoapp.data.RepositoryImpl;
+import com.sasaj.todoapp.domain.entities.ToDo;
 import com.sasaj.todoapp.presentation.list.ToDoListActivity;
 
 /**
@@ -55,7 +55,7 @@ public class ToDoDetailFragment extends Fragment {
 
         if (getArguments() != null && getArguments().containsKey(ARG_TODO_KEY)) {
             todoKey = getArguments().getString(ARG_TODO_KEY);
-            todoReference = Repository.INSTANCE().getQueryForSingleUserTodo(todoKey);
+            todoReference = RepositoryImpl.INSTANCE().getQueryForSingleUserTodo(todoKey);
         }
     }
 
