@@ -53,7 +53,7 @@ public class EditToDoDetailFragment extends Fragment {
 
     @Inject
     public EditToDoVMFactory editToDoVMFactory;
-
+    public EditToDoViewModel editToDoViewModel;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -61,9 +61,6 @@ public class EditToDoDetailFragment extends Fragment {
      */
     public EditToDoDetailFragment() {
     }
-
-
-    public EditToDoViewModel editToDoViewModel;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
