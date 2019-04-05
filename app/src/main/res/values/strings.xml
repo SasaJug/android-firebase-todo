@@ -18,4 +18,7 @@
     <string name="sign_out_title">Sign Out</string>
     <string name="sign_out_question">Do you want to sign out?</string>
     <string name="completed">Completed</string>
+    <string name="ok_button">OK</string>
+    <string name="cancel_button">Cancel</string>
+    <string name="db_error_msg">Failed to load post.</string>
 </resources>

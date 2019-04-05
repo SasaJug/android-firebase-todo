@@ -1,4 +1,4 @@
-package com.sasaj.todoapp.ui.list;
+package com.sasaj.todoapp.presentation.list;
 
 import android.content.Context;
 import android.content.Intent;
@@ -15,9 +15,9 @@ import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.google.firebase.database.DatabaseReference;
 import com.sasaj.todoapp.R;
 import com.sasaj.todoapp.data.Repository;
-import com.sasaj.todoapp.entity.ToDo;
-import com.sasaj.todoapp.ui.view.ToDoDetailActivity;
-import com.sasaj.todoapp.ui.view.ToDoDetailFragment;
+import com.sasaj.todoapp.domain.ToDo;
+import com.sasaj.todoapp.presentation.view.ToDoDetailActivity;
+import com.sasaj.todoapp.presentation.view.ToDoDetailFragment;
 
 public class SimpleItemRecyclerViewAdapter extends FirebaseRecyclerAdapter<ToDo, SimpleItemRecyclerViewAdapter.ViewHolder> {
 

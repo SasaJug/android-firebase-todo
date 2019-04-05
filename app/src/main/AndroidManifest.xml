@@ -3,7 +3,6 @@
     package="com.sasaj.todoapp">
 
     <application
-        android:name=".ToDoApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -11,7 +10,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".ui.list.ToDoListActivity"
+            android:name=".presentation.list.ToDoListActivity"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
@@ -21,22 +20,22 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ui.view.ToDoDetailActivity"
+            android:name=".presentation.view.ToDoDetailActivity"
             android:label="@string/title_todo_detail"
-            android:parentActivityName=".ui.list.ToDoListActivity"
+            android:parentActivityName=".presentation.list.ToDoListActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.sasaj.todoapp.ui.list.ToDoListActivity" />
+                android:value="com.sasaj.todoapp.presentation.list.ToDoListActivity" />
         </activity>
         <activity
-            android:name=".ui.edit.EditToDoDetailActivity"
+            android:name=".presentation.edit.EditToDoDetailActivity"
             android:label="@string/title_todo_detail"
-            android:parentActivityName=".ui.list.ToDoListActivity"
+            android:parentActivityName=".presentation.list.ToDoListActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.sasaj.todoapp.ui.list.ToDoListActivity" />
+                android:value="com.sasaj.todoapp.presentation.list.ToDoListActivity" />
         </activity>
     </application>
 

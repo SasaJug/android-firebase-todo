@@ -24,10 +24,10 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'com.android.support:appcompat-v7:28.0.0'
-    implementation 'com.android.support:support-v4:28.0.0'
-    implementation 'com.android.support:recyclerview-v7:28.0.0'
-    implementation 'com.android.support:design:28.0.0'
+    implementation "com.android.support:appcompat-v7:$rootProject.supportLibraryVersion"
+    implementation "com.android.support:design:$rootProject.supportLibraryVersion"
+    implementation "com.android.support:recyclerview-v7:$rootProject.supportLibraryVersion"
+    implementation "com.android.support:support-v4:$rootProject.supportLibraryVersion"
 
     //Firebase
     implementation 'com.google.firebase:firebase-core:16.0.8'
@@ -35,7 +35,7 @@ dependencies {
     implementation 'com.firebaseui:firebase-ui-auth:4.3.1'
     implementation 'com.facebook.android:facebook-android-sdk:4.41.0'
     implementation 'com.google.firebase:firebase-database:16.1.0'
-    implementation 'com.firebaseui:firebase-ui-database:4.3.1'
+    implementation 'com.firebaseui:firebase-ui-database:4.3.2'
 
     // architecture components
     implementation "android.arch.lifecycle:runtime:$rootProject.ext.archRuntimeVersion"
@@ -44,9 +44,24 @@ dependencies {
     implementation "com.android.support.constraint:constraint-layout:$rootProject.ext.constraintLayoutVersion"
     annotationProcessor "android.arch.lifecycle:compiler:$rootProject.ext.archRuntimeVersion"
 
-    testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'com.android.support.test:runner:1.0.2'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    //RxJava & RxAndroid
+    implementation "io.reactivex.rxjava2:rxjava:$rootProject.rxJavaVersion"
+    implementation "io.reactivex.rxjava2:rxandroid:$rootProject.rxAndroidVersion"
+
+    //Dagger
+    implementation "com.google.dagger:dagger:$rootProject.ext.daggerVersion"
+    implementation "com.google.dagger:dagger-android:$rootProject.ext.daggerVersion"
+    implementation "com.google.dagger:dagger-android-support:$rootProject.ext.daggerVersion"
+    annotationProcessor "com.google.dagger:dagger-compiler:$rootProject.ext.daggerVersion"
+
+    //Testing
+    testImplementation "junit:junit:$rootProject.ext.junitVersion"
+    testImplementation "org.mockito:mockito-core:$rootProject.ext.mockitoVersion"
+    testImplementation "android.arch.core:core-testing:1.1.1"
+    androidTestImplementation "com.android.support.test:runner:$rootProject.supportTestRunnerVersion"
+    androidTestImplementation "com.android.support.test.espresso:espresso-core:$rootProject.espressoVersion"
+
+    androidTestImplementation "android.arch.core:core-testing:1.1.1"
 }
 
 apply plugin: 'com.google.gms.google-services'

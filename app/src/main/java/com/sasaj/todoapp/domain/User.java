@@ -1,4 +1,4 @@
-package com.sasaj.todoapp.entity;
+package com.sasaj.todoapp.domain;
 
 public class User {
     public String name;

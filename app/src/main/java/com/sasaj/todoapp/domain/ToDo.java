@@ -1,4 +1,4 @@
-package com.sasaj.todoapp.entity;
+package com.sasaj.todoapp.domain;
 
 import com.google.firebase.database.Exclude;
 
@@ -24,7 +24,6 @@ public class ToDo {
         this.timestamp = timestamp;
     }
 
-    // [START post_to_map]
     @Exclude
     public Map<String, Object> toMap() {
         HashMap<String, Object> result = new HashMap<>();
@@ -37,5 +36,4 @@ public class ToDo {
         result.put("timestamp", timestamp);
         return result;
     }
-    // [END post_to_map]
 }
