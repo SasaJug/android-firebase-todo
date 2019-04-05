@@ -1,7 +1,8 @@
-package com.sasaj.todoapp.ui.edit;
+package com.sasaj.todoapp.presentation.edit;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -15,15 +16,14 @@ import android.widget.Toast;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.sasaj.todoapp.R;
 import com.sasaj.todoapp.data.Repository;
-import com.sasaj.todoapp.entity.ToDo;
-import com.sasaj.todoapp.entity.User;
+import com.sasaj.todoapp.domain.ToDo;
+import com.sasaj.todoapp.domain.User;
 
-import static com.sasaj.todoapp.ui.view.ToDoDetailFragment.ARG_TODO_KEY;
+import static com.sasaj.todoapp.presentation.view.ToDoDetailFragment.ARG_TODO_KEY;
 
 /**
  * A fragment representing a single edit item detail screen.
@@ -39,16 +39,20 @@ public class EditToDoDetailFragment extends Fragment {
     private ImageView checkBox;
     private Button saveButton;
     private Button cancelButton;
-
-    private Query todoReference;
-    private String todoKey;
     private View rootView;
+
+    private String todoKey;
+
     /**
      * The item content this fragment is presenting.
      */
     private ToDo toDo;
     private boolean completed = false;
 
+    private Query todoQuery;
+    private Query userQuery;
+    private ValueEventListener todoListener;
+    private ValueEventListener userListener;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -61,17 +65,16 @@ public class EditToDoDetailFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-
         if (getArguments() != null && getArguments().containsKey(ARG_TODO_KEY)) {
             todoKey = getArguments().getString(ARG_TODO_KEY);
-
-            todoReference = Repository.INSTANCE().getQueryForSingleUserTodo(todoKey);
+            todoQuery = Repository.INSTANCE().getQueryForSingleUserTodo(todoKey);
         }
+        userQuery = Repository.INSTANCE().getQueryForUsers();
     }
 
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.edit_todo_detail, container, false);
 
@@ -104,9 +107,9 @@ public class EditToDoDetailFragment extends Fragment {
     public void onStart() {
         super.onStart();
 
-        ValueEventListener todoListener = new ValueEventListener() {
+        todoListener = new ValueEventListener() {
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 // Get _ToDo object and use the values to update the UI
                 toDo = dataSnapshot.getValue(ToDo.class);
                 if (toDo != null) {
@@ -135,15 +138,25 @@ public class EditToDoDetailFragment extends Fragment {
             public void onCancelled(DatabaseError databaseError) {
                 // Getting Post failed, log a message
                 Log.w(TAG, "loadPost:onCancelled", databaseError.toException());
-                Toast.makeText(EditToDoDetailFragment.this.getActivity(), "Failed to load post.",
+                Toast.makeText(EditToDoDetailFragment.this.getActivity(), "Failed to load ToDo.",
                         Toast.LENGTH_SHORT).show();
             }
         };
         if (todoKey != null) {
-            todoReference.addValueEventListener(todoListener);
+            todoQuery.addValueEventListener(todoListener);
         }
     }
 
+    @Override
+    public void onStop() {
+        super.onStop();
+        if(todoQuery != null && todoListener != null){
+            todoQuery.removeEventListener(todoListener);
+        }
+        if(userQuery != null && userListener != null){
+            userQuery.removeEventListener(userListener);
+        }
+    }
 
     public void saveToDo() {
         resetErrors();
@@ -157,40 +170,37 @@ public class EditToDoDetailFragment extends Fragment {
             return;
         } else {
 
-            Repository.INSTANCE().getQueryForUsers().addListenerForSingleValueEvent(
-                    new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-                            // Get user value
-                            User user = dataSnapshot.getValue(User.class);
+            setEditingEnabled(false);
+            userListener = new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    // Get user value
+                    User user = dataSnapshot.getValue(User.class);
 
-                            // [START_EXCLUDE]
-                            if (user == null) {
-                                // User is null, error out
-                                Log.e(TAG, "User " + user.name + " is unexpectedly null");
-                                Toast.makeText(getActivity(),
-                                        "Error: could not fetch user.",
-                                        Toast.LENGTH_SHORT).show();
-                            } else {
-                                // Write new post
-                                Repository.INSTANCE().writeNewTodo(title.getText().toString(), description.getText().toString(), completed, todoKey);
-                            }
+                    if (user == null) {
+                        // User is null, error out
+                        Log.e(TAG, "User is unexpectedly null");
+                        Toast.makeText(getActivity(),
+                                "Error: could not fetch user.",
+                                Toast.LENGTH_SHORT).show();
+                    } else {
+                        // Write new todo
+                        Repository.INSTANCE().writeNewTodo(title.getText().toString(), description.getText().toString(), completed, todoKey);
+                    }
 
-                            setEditingEnabled(true);
-                            if (getActivity() != null) {
-                                getActivity().finish();
-                            }
-                        }
+                    setEditingEnabled(true);
+                    if (getActivity() != null) {
+                        getActivity().finish();
+                    }
+                }
 
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {
-                            Log.w(TAG, "getUser:onCancelled", databaseError.toException());
-                            // [START_EXCLUDE]
-                            setEditingEnabled(true);
-                            // [END_EXCLUDE]
-                        }
-                    });
-            // [END single_value_read]
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    Log.w(TAG, "getUser:onCancelled", databaseError.toException());
+                    setEditingEnabled(true);
+                }
+            };
+            Repository.INSTANCE().getQueryForUsers().addListenerForSingleValueEvent(userListener);
         }
     }
 

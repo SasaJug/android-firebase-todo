@@ -9,7 +9,7 @@
     android:divider="?android:attr/dividerHorizontal"
     android:orientation="horizontal"
     android:showDividers="middle"
-    tools:context=".ui.list.ToDoListActivity">
+    tools:context=".presentation.list.ToDoListActivity">
 
     <!--
     This layout is a two-pane layout for the ToDos
@@ -25,7 +25,7 @@
         android:layout_height="match_parent"
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
-        tools:context="com.sasaj.todoapp.ui.list.ToDoListActivity" />
+        tools:context="com.sasaj.todoapp.presentation.list.ToDoListActivity" />
 
     <FrameLayout
         android:id="@+id/todo_detail_container"

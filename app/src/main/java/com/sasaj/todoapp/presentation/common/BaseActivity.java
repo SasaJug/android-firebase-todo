@@ -1,24 +1,14 @@
-package com.sasaj.todoapp.ui.common;
+package com.sasaj.todoapp.presentation.common;
 
 import android.content.Intent;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.firebase.ui.auth.AuthUI;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.sasaj.todoapp.R;
 import com.sasaj.todoapp.data.Repository;
-import com.sasaj.todoapp.entity.User;
-import com.sasaj.todoapp.ui.list.ToDoListActivity;
-
-import java.util.Arrays;
-import java.util.List;
+import com.sasaj.todoapp.presentation.list.ToDoListActivity;
 
 public abstract class BaseActivity extends AppCompatActivity {
 
@@ -51,12 +41,11 @@ public abstract class BaseActivity extends AppCompatActivity {
                 .setTitle(title)
                 .setMessage(message)
                 .setCancelable(false)
-                .setPositiveButton("OK",
-                        (dialog, id) -> Repository.INSTANCE().getAuthUI()
-                                .signOut(BaseActivity.this)
-                                .addOnCompleteListener(task -> startActivity(new Intent (BaseActivity.this, ToDoListActivity.class)
-                                        .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK))))
-                .setNegativeButton("Cancel",
+                .setPositiveButton(getString(R.string.ok_button),
+                        (dialog, id) -> Repository.INSTANCE()
+                                .signOut(BaseActivity.this, new Intent (BaseActivity.this, ToDoListActivity.class)
+                                        .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK)))
+                .setNegativeButton(getString(R.string.cancel_button),
                         (dialog, id) -> dialog.cancel());
 
         // create alert dialog
@@ -65,8 +54,5 @@ public abstract class BaseActivity extends AppCompatActivity {
         // show it
         alertDialog.show();
     }
-
-
-    protected void setContent(){}
 
 }

@@ -10,41 +10,37 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
-import com.sasaj.todoapp.entity.ToDo;
-import com.sasaj.todoapp.entity.User;
+import com.sasaj.todoapp.domain.ToDo;
+import com.sasaj.todoapp.domain.User;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Repository{
+public class Repository {
 
     private static Repository INSTANCE;
 
     private FirebaseDatabase firebaseDatabase;
 
-    public static Repository INSTANCE (){
-        if(INSTANCE == null){
+    public static Repository INSTANCE() {
+        if (INSTANCE == null) {
             INSTANCE = new Repository();
         }
         return INSTANCE;
     }
 
-    private Repository (){
+    private Repository() {
         firebaseDatabase = FirebaseDatabase.getInstance();
         firebaseDatabase.setPersistenceEnabled(true);
     }
 
-    public AuthUI getAuthUI(){
-        return AuthUI.getInstance();
-    }
-
-    public FirebaseUser getCurrentUser(){
+    public FirebaseUser getCurrentUser() {
         return FirebaseAuth.getInstance().getCurrentUser();
     }
 
-    public Intent getAuthUIIntent(){
+    public Intent getAuthUIIntent() {
         List<AuthUI.IdpConfig> providers = Arrays.asList(
                 new AuthUI.IdpConfig.EmailBuilder().build(),
                 new AuthUI.IdpConfig.GoogleBuilder().build(),
@@ -58,13 +54,14 @@ public class Repository{
                 .build();
     }
 
-    public void signOut(Context context){
-        AuthUI.getInstance().signOut(context);
+    public void signOut(Context context, Intent intent) {
+        AuthUI.getInstance().signOut(context).addOnCompleteListener(task -> context.startActivity(intent));
     }
 
-    public void addUserToDatabase(){
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        writeNewUser(user.getUid(), usernameFromEmail(user.getEmail()), user.getEmail() );
+    public void addUserToDatabase() {
+        if (getCurrentUser() != null) {
+            writeNewUser(getCurrentUser().getUid(), usernameFromEmail(getCurrentUser().getEmail()), getCurrentUser().getEmail());
+        }
     }
 
     private void writeNewUser(String userId, String name, String email) {
@@ -73,8 +70,53 @@ public class Repository{
         db.child("users").child(userId).setValue(user);
     }
 
+
+    public Query getQueryForUsers() {
+        if (getCurrentUser() != null) {
+            return firebaseDatabase.getReference().child("users").child(getCurrentUser().getUid());
+        } else {
+            return null;
+        }
+    }
+
+    public Query getQueryForUserTodos() {
+        if (getCurrentUser()!= null) {
+            // Order by opposite property so completed todos go to the bottom of the list.
+            return firebaseDatabase.getReference().child("user-todos").child(getCurrentUser().getUid()).orderByChild("opposite");
+        } else {
+            return null;
+        }
+    }
+
+    public Query getQueryForSingleUserTodo(String todoKey) {
+        if (getCurrentUser() != null) {
+            return firebaseDatabase.getReference().child("user-todos").child(getCurrentUser().getUid()).child(todoKey);
+        } else {
+            return null;
+        }
+    }
+
+
+    public void writeNewTodo(String title, String description, boolean completed, String todoKey) {
+        if (getCurrentUser() != null) {
+            String timestamp = Long.toString(System.currentTimeMillis());
+            ToDo toDo = new ToDo(getCurrentUser().getUid(), title, description, completed, timestamp);
+
+            if (todoKey == null) {
+                todoKey = firebaseDatabase.getReference().child("todos").push().getKey();
+            }
+            Map<String, Object> postValues = toDo.toMap();
+
+            Map<String, Object> childUpdates = new HashMap<>();
+            childUpdates.put("/todos/" + todoKey, postValues);
+            childUpdates.put("/user-todos/" + getCurrentUser().getUid() + "/" + todoKey, postValues);
+
+            firebaseDatabase.getReference().updateChildren(childUpdates);
+        }
+    }
+
     private String usernameFromEmail(String email) {
-        if(email != null){
+        if (email != null) {
             if (email.contains("@")) {
                 return email.split("@")[0];
             } else {
@@ -85,41 +127,11 @@ public class Repository{
         }
     }
 
-    public FirebaseRecyclerOptions<ToDo> getToDoListOptions(){
+    public FirebaseRecyclerOptions<ToDo> getToDoListOptions() {
         Query todosQuery = getQueryForUserTodos();
 
         return new FirebaseRecyclerOptions.Builder<ToDo>()
                 .setQuery(todosQuery, ToDo.class)
                 .build();
-    }
-
-
-    public Query getQueryForUsers() {
-        return firebaseDatabase.getReference().child("users").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
-    }
-
-    public Query getQueryForUserTodos() {
-        // Order by opposite property so completed todos go to the bottom of the list.
-        return firebaseDatabase.getReference().child("user-todos").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).orderByChild("opposite");
-    }
-
-    public Query getQueryForSingleUserTodo(String todoKey) {
-        return firebaseDatabase.getReference().child("user-todos").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child(todoKey);
-    }
-
-    public void writeNewTodo(String title, String description, boolean completed, String todoKey) {
-        String timestamp = Long.toString(System.currentTimeMillis());
-        ToDo toDo = new ToDo(getCurrentUser().getUid(), title, description, completed, timestamp);
-
-        if(todoKey == null){
-            todoKey = firebaseDatabase.getReference().child("todos").push().getKey();
-        }
-        Map<String, Object> postValues = toDo.toMap();
-
-        Map<String, Object> childUpdates = new HashMap<>();
-        childUpdates.put("/todos/" + todoKey, postValues);
-        childUpdates.put("/user-todos/" + getCurrentUser().getUid() + "/" + todoKey, postValues);
-
-        firebaseDatabase.getReference().updateChildren(childUpdates);
     }
 }

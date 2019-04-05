@@ -1,19 +1,14 @@
-package com.sasaj.todoapp.ui.edit;
+package com.sasaj.todoapp.presentation.edit;
 
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
-import android.view.CollapsibleActionView;
 import android.view.MenuItem;
-import android.view.View;
 
 import com.sasaj.todoapp.R;
-import com.sasaj.todoapp.ui.common.BaseActivity;
-import com.sasaj.todoapp.ui.list.ToDoListActivity;
+import com.sasaj.todoapp.presentation.common.BaseActivity;
 
-import static com.sasaj.todoapp.ui.view.ToDoDetailFragment.ARG_TODO_KEY;
+import static com.sasaj.todoapp.presentation.view.ToDoDetailFragment.ARG_TODO_KEY;
 
 /**
  * An activity representing a single Edit Item detail screen.

@@ -1,4 +1,4 @@
-package com.sasaj.todoapp.ui.list;
+package com.sasaj.todoapp.presentation.list;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -10,9 +10,9 @@ import android.support.v7.widget.Toolbar;
 
 import com.sasaj.todoapp.R;
 import com.sasaj.todoapp.data.Repository;
-import com.sasaj.todoapp.ui.common.BaseActivity;
-import com.sasaj.todoapp.ui.edit.EditToDoDetailActivity;
-import com.sasaj.todoapp.ui.view.ToDoDetailActivity;
+import com.sasaj.todoapp.presentation.common.BaseActivity;
+import com.sasaj.todoapp.presentation.edit.EditToDoDetailActivity;
+import com.sasaj.todoapp.presentation.view.ToDoDetailActivity;
 
 /**
  * An activity representing a list of ToDos. This activity
@@ -43,6 +43,7 @@ public class ToDoListActivity extends BaseActivity {
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(view -> {
+            overridePendingTransition(0,0);
             Intent intent = new Intent(ToDoListActivity.this, EditToDoDetailActivity.class);
             startActivity(intent);
         });

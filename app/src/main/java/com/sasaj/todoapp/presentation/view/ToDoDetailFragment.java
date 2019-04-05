@@ -1,8 +1,9 @@
-package com.sasaj.todoapp.ui.view;
+package com.sasaj.todoapp.presentation.view;
 
 import android.app.Activity;
-import android.support.design.widget.CollapsingToolbarLayout;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -12,29 +13,28 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.sasaj.todoapp.R;
 import com.sasaj.todoapp.data.Repository;
-import com.sasaj.todoapp.entity.ToDo;
-import com.sasaj.todoapp.ui.list.ToDoListActivity;
+import com.sasaj.todoapp.domain.ToDo;
+import com.sasaj.todoapp.presentation.list.ToDoListActivity;
 
 /**
- * A fragment representing a single _ToDo detail screen.
+ * A fragment representing a single ToDo detail screen.
  * This fragment is either contained in a {@link ToDoListActivity}
  * in two-pane mode (on tablets) or a {@link ToDoDetailActivity}
  * on handsets.
  */
 public class ToDoDetailFragment extends Fragment {
+
     /**
      * The fragment argument representing the TODO_KEY that this fragment
      * represents.
      */
+
     public static final String ARG_TODO_KEY = "TODO_KEY";
     private static final String TAG = ToDoDetailFragment.class.getSimpleName();
     private Query todoReference;
@@ -53,7 +53,7 @@ public class ToDoDetailFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (getArguments().containsKey(ARG_TODO_KEY)) {
+        if (getArguments() != null && getArguments().containsKey(ARG_TODO_KEY)) {
             todoKey = getArguments().getString(ARG_TODO_KEY);
             todoReference = Repository.INSTANCE().getQueryForSingleUserTodo(todoKey);
         }
@@ -65,32 +65,39 @@ public class ToDoDetailFragment extends Fragment {
 
         todoListener = new ValueEventListener() {
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 // Get _ToDo object and use the values to update the UI
                 ToDo toDo = dataSnapshot.getValue(ToDo.class);
-                if (toDo != null) {
+                if (toDo != null && isAdded()) {
                     Activity activity = ToDoDetailFragment.this.getActivity();
-                    CollapsingToolbarLayout appBarLayout = activity.findViewById(R.id.toolbar_layout);
-                    if (appBarLayout != null) {
-                        appBarLayout.setTitle(toDo.title);
-                    }
-                    if (rootView != null) {
-                        ((TextView) rootView.findViewById(R.id.todo_detail)).setText(toDo.description);
-                        if(toDo.completed){
-                            ((ImageView) rootView.findViewById(R.id.checkBox_view)).setImageResource(R.drawable.ic_check_box_black_24dp);
-                        } else {
-                            ((ImageView) rootView.findViewById(R.id.checkBox_view)).setImageResource(R.drawable.ic_check_box_outline_blank_black_24dp);
+                    if (activity != null) {
+                        CollapsingToolbarLayout appBarLayout = activity.findViewById(R.id.toolbar_layout);
+                        if (appBarLayout != null) {
+                            appBarLayout.setTitle(toDo.title);
+                        }
+                        if (rootView != null) {
+                            ((TextView) rootView.findViewById(R.id.todo_detail)).setText(toDo.description);
+                            if (toDo.completed) {
+                                ((ImageView) rootView.findViewById(R.id.checkBox_view)).setImageResource(R.drawable.ic_check_box_black_24dp);
+                            } else {
+                                ((ImageView) rootView.findViewById(R.id.checkBox_view)).setImageResource(R.drawable.ic_check_box_outline_blank_black_24dp);
+                            }
                         }
                     }
                 }
             }
 
             @Override
-            public void onCancelled(DatabaseError databaseError) {
+            public void onCancelled(@NonNull DatabaseError databaseError) {
                 // Getting Post failed, log a message
-                Log.w(TAG, "loadPost:onCancelled", databaseError.toException());
-                Toast.makeText(ToDoDetailFragment.this.getActivity(), "Failed to load post.",
-                        Toast.LENGTH_SHORT).show();
+                if (isAdded()) {
+                    Activity activity = ToDoDetailFragment.this.getActivity();
+                    if (activity != null) {
+                        Log.w(TAG, "loadPost:onCancelled", databaseError.toException());
+                        Toast.makeText(activity, activity.getString(R.string.db_error_msg),
+                                Toast.LENGTH_SHORT).show();
+                    }
+                }
             }
         };
         todoReference.addValueEventListener(todoListener);
@@ -100,14 +107,14 @@ public class ToDoDetailFragment extends Fragment {
     public void onStop() {
 
         // Remove post value event listener
-        if (todoListener != null) {
+        if (todoReference != null && todoListener != null) {
             todoReference.removeEventListener(todoListener);
         }
         super.onStop();
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.todo_detail, container, false);
 
