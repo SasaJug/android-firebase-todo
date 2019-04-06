@@ -44,10 +44,10 @@ public class ToDoDetailFragment extends Fragment {
     public static final String ARG_TODO_KEY = "TODO_KEY";
     private static final String TAG = ToDoDetailFragment.class.getSimpleName();
 
-    private Query todoReference;
+//    private Query todoReference;
     private String todoKey;
     private View rootView;
-    private ValueEventListener todoListener;
+//    private ValueEventListener todoListener;
 
 
     @Inject
@@ -72,7 +72,7 @@ public class ToDoDetailFragment extends Fragment {
 
         if (getArguments() != null && getArguments().containsKey(ARG_TODO_KEY)) {
             todoKey = getArguments().getString(ARG_TODO_KEY);
-            todoReference = RepositoryImpl.INSTANCE().getQueryForSingleUserTodo(todoKey);
+//            todoReference = RepositoryImpl.INSTANCE().getQueryForSingleUserTodo(todoKey);
         }
     }
 

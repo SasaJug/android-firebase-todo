@@ -8,6 +8,7 @@ import android.view.MenuItem;
 
 import com.sasaj.todoapp.R;
 import com.sasaj.todoapp.data.RepositoryImpl;
+import com.sasaj.todoapp.presentation.firebase.FirebaseUIUtil;
 import com.sasaj.todoapp.presentation.list.ToDoListActivity;
 
 public abstract class BaseActivity extends AppCompatActivity {
@@ -42,7 +43,7 @@ public abstract class BaseActivity extends AppCompatActivity {
                 .setMessage(message)
                 .setCancelable(false)
                 .setPositiveButton(getString(R.string.ok_button),
-                        (dialog, id) -> RepositoryImpl.INSTANCE()
+                        (dialog, id) -> FirebaseUIUtil
                                 .signOut(BaseActivity.this, new Intent (BaseActivity.this, ToDoListActivity.class)
                                         .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK)))
                 .setNegativeButton(getString(R.string.cancel_button),

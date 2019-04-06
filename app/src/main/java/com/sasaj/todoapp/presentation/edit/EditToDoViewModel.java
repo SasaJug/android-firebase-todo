@@ -1,6 +1,7 @@
 package com.sasaj.todoapp.presentation.edit;
 
 import android.arch.lifecycle.MutableLiveData;
+import android.support.annotation.NonNull;
 
 import com.sasaj.todoapp.domain.usecases.EditToDoUseCase;
 import com.sasaj.todoapp.domain.usecases.GetToDoUseCase;
@@ -26,17 +27,23 @@ public class EditToDoViewModel extends BaseViewModel {
         editTodoLiveData.setValue(new EditToDoViewState(LOADING));
         addDisposable(editToDoUseCase.editTodo(todoKey, title, description, completed)
                 .subscribe(
-                        nextEvent -> editTodoLiveData.setValue(new EditToDoViewState(SUCCESS)),
+                        nextEvent -> {
+                            /*
+                             In offline mode OnSuccessListener will not fire until again in online mode.
+                             Because of that we do not wait for this event, but trigger editToDoLiveData change immediately.
+                              */
+                        },
                         error -> {
                             EditToDoViewState editToDoViewState = new EditToDoViewState(ERROR);
                             editToDoViewState.throwable = error;
                             editTodoLiveData.setValue(editToDoViewState);
                         },
                         () -> editTodoLiveData.setValue(new EditToDoViewState(COMPLETED))));
+        editTodoLiveData.setValue(new EditToDoViewState(SUCCESS));
     }
 
 
-    public void getToDo(String todoKey) {
+    public void getToDo(@NonNull String todoKey) {
         getTodoLiveData.setValue(new EditToDoViewState(LOADING));
         addDisposable(getToDoUseCase.getTodo(todoKey)
                 .subscribe(

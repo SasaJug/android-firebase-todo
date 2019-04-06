@@ -116,7 +116,9 @@ public class EditToDoDetailFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        editToDoViewModel.getToDo(todoKey);
+        if(todoKey != null){
+            editToDoViewModel.getToDo(todoKey);
+        }
     }
 
 
