@@ -21,4 +21,6 @@
     <string name="ok_button">OK</string>
     <string name="cancel_button">Cancel</string>
     <string name="db_error_msg">Failed to load post.</string>
+    <string name="title_error_msg">Title must not be empty</string>
+    <string name="description_error_msg">Description must not be empty</string>
 </resources>

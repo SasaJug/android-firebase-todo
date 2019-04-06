@@ -1,4 +1,4 @@
-package com.sasaj.todoapp.domain;
+package com.sasaj.todoapp.domain.entities;
 
 import com.google.firebase.database.Exclude;
 

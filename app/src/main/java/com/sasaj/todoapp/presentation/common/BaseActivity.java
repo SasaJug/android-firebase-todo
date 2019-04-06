@@ -7,7 +7,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.sasaj.todoapp.R;
-import com.sasaj.todoapp.data.Repository;
+import com.sasaj.todoapp.data.RepositoryImpl;
+import com.sasaj.todoapp.presentation.firebase.FirebaseUIUtil;
 import com.sasaj.todoapp.presentation.list.ToDoListActivity;
 
 public abstract class BaseActivity extends AppCompatActivity {
@@ -42,11 +43,30 @@ public abstract class BaseActivity extends AppCompatActivity {
                 .setMessage(message)
                 .setCancelable(false)
                 .setPositiveButton(getString(R.string.ok_button),
-                        (dialog, id) -> Repository.INSTANCE()
+                        (dialog, id) -> FirebaseUIUtil
                                 .signOut(BaseActivity.this, new Intent (BaseActivity.this, ToDoListActivity.class)
                                         .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK)))
                 .setNegativeButton(getString(R.string.cancel_button),
                         (dialog, id) -> dialog.cancel());
+
+        // create alert dialog
+        AlertDialog alertDialog = alertDialogBuilder.create();
+
+        // show it
+        alertDialog.show();
+    }
+
+
+    public void showErrorDialog(Throwable throwable){
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+
+        alertDialogBuilder
+                .setTitle(throwable.getMessage())
+                .setMessage(throwable.toString())
+                .setCancelable(false)
+                .setPositiveButton(getString(R.string.ok_button),
+                        (dialog, id) -> dialog.dismiss());
+
 
         // create alert dialog
         AlertDialog alertDialog = alertDialogBuilder.create();

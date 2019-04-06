@@ -1,28 +1,34 @@
 package com.sasaj.todoapp.presentation.edit;
 
 import android.app.Activity;
+import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.Toast;
 
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.sasaj.todoapp.R;
-import com.sasaj.todoapp.data.Repository;
-import com.sasaj.todoapp.domain.ToDo;
-import com.sasaj.todoapp.domain.User;
+import com.sasaj.todoapp.TodoApplication;
+import com.sasaj.todoapp.data.RepositoryImpl;
+import com.sasaj.todoapp.domain.entities.ToDo;
+import com.sasaj.todoapp.presentation.common.BaseActivity;
 
+import javax.inject.Inject;
+
+import static com.sasaj.todoapp.presentation.edit.EditToDoViewState.COMPLETED;
+import static com.sasaj.todoapp.presentation.edit.EditToDoViewState.ERROR;
+import static com.sasaj.todoapp.presentation.edit.EditToDoViewState.LOADING;
+import static com.sasaj.todoapp.presentation.edit.EditToDoViewState.SUCCESS;
+import static com.sasaj.todoapp.presentation.edit.EditToDoViewState.SUCCESS_LOADING_TODO;
 import static com.sasaj.todoapp.presentation.view.ToDoDetailFragment.ARG_TODO_KEY;
 
 /**
@@ -43,16 +49,11 @@ public class EditToDoDetailFragment extends Fragment {
 
     private String todoKey;
 
-    /**
-     * The item content this fragment is presenting.
-     */
-    private ToDo toDo;
     private boolean completed = false;
 
-    private Query todoQuery;
-    private Query userQuery;
-    private ValueEventListener todoListener;
-    private ValueEventListener userListener;
+    @Inject
+    public EditToDoVMFactory editToDoVMFactory;
+    public EditToDoViewModel editToDoViewModel;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -65,11 +66,12 @@ public class EditToDoDetailFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        ((TodoApplication) getActivity().getApplication()).applicationComponent.inject(this);
+
         if (getArguments() != null && getArguments().containsKey(ARG_TODO_KEY)) {
             todoKey = getArguments().getString(ARG_TODO_KEY);
-            todoQuery = Repository.INSTANCE().getQueryForSingleUserTodo(todoKey);
         }
-        userQuery = Repository.INSTANCE().getQueryForUsers();
+
     }
 
 
@@ -97,110 +99,94 @@ public class EditToDoDetailFragment extends Fragment {
         });
 
         saveButton.setOnClickListener(view -> saveToDo());
-
         cancelButton.setOnClickListener(view -> cancel());
 
         return rootView;
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
 
-        todoListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                // Get _ToDo object and use the values to update the UI
-                toDo = dataSnapshot.getValue(ToDo.class);
-                if (toDo != null) {
-                    Activity activity = EditToDoDetailFragment.this.getActivity();
-                    if (activity != null) {
-                        Toolbar toolbar = activity.findViewById(R.id.toolbar);
-                        if (toolbar != null) {
-                            toolbar.setTitle(toDo.title);
-                        }
-                        if (rootView != null) {
-                            title.setText(toDo.title);
-                            description.setText(toDo.description);
-                            if (toDo.completed) {
-                                completed = true;
-                                checkBox.setImageResource(R.drawable.ic_check_box_black_24dp);
-                            } else {
-                                completed = false;
-                                checkBox.setImageResource(R.drawable.ic_check_box_outline_blank_black_24dp);
-                            }
-                        }
-                    }
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                // Getting Post failed, log a message
-                Log.w(TAG, "loadPost:onCancelled", databaseError.toException());
-                Toast.makeText(EditToDoDetailFragment.this.getActivity(), "Failed to load ToDo.",
-                        Toast.LENGTH_SHORT).show();
-            }
-        };
-        if (todoKey != null) {
-            todoQuery.addValueEventListener(todoListener);
-        }
+        editToDoViewModel = ViewModelProviders.of(this, editToDoVMFactory).get(EditToDoViewModel.class);
+        editToDoViewModel.editTodoLiveData.observe(getActivity(), this::handleViewState);
+        editToDoViewModel.getTodoLiveData.observe(getActivity(), this::handleViewState);
     }
 
     @Override
-    public void onStop() {
-        super.onStop();
-        if(todoQuery != null && todoListener != null){
-            todoQuery.removeEventListener(todoListener);
-        }
-        if(userQuery != null && userListener != null){
-            userQuery.removeEventListener(userListener);
+    public void onStart() {
+        super.onStart();
+        if(todoKey != null){
+            editToDoViewModel.getToDo(todoKey);
         }
     }
+
 
     public void saveToDo() {
         resetErrors();
         if (title.getText().toString().equals("") || description.getText().toString().equals("")) {
             if (title.getText().toString().equals("")) {
-                titleLayout.setError("Title must not be empty");
+                titleLayout.setError(getString(R.string.title_error_msg));
             }
             if (description.getText().toString().equals("")) {
-                descriptionLayout.setError("Description must not be empty");
+                descriptionLayout.setError(getString(R.string.description_error_msg));
             }
             return;
         } else {
 
             setEditingEnabled(false);
-            userListener = new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    // Get user value
-                    User user = dataSnapshot.getValue(User.class);
+            editToDoViewModel.editToDo(todoKey, title.getText().toString(), description.getText().toString(), completed);
+        }
+    }
 
-                    if (user == null) {
-                        // User is null, error out
-                        Log.e(TAG, "User is unexpectedly null");
-                        Toast.makeText(getActivity(),
-                                "Error: could not fetch user.",
-                                Toast.LENGTH_SHORT).show();
+    private void handleViewState(EditToDoViewState editToDoViewState) {
+        int state = editToDoViewState.state;
+        switch (state) {
+            case LOADING:
+                setEditingEnabled(false);
+                break;
+            case SUCCESS:
+                setEditingEnabled(true);
+                if (getActivity() != null) {
+                    getActivity().finish();
+                }
+                break;
+            case SUCCESS_LOADING_TODO:
+                setEditingEnabled(true);
+                setTodo(editToDoViewState.todo);
+                break;
+            case ERROR:
+                setEditingEnabled(true);
+                if (getActivity() != null) {
+                    ((BaseActivity) getActivity()).showErrorDialog(editToDoViewState.throwable);
+                }
+                break;
+            case COMPLETED:
+                setEditingEnabled(true);
+                break;
+        }
+    }
+
+    private void setTodo(ToDo todo) {
+        if (todo != null) {
+            Activity activity = EditToDoDetailFragment.this.getActivity();
+            if (activity != null) {
+                Toolbar toolbar = activity.findViewById(R.id.toolbar);
+                if (toolbar != null) {
+                    toolbar.setTitle(todo.title);
+                }
+                if (rootView != null) {
+                    title.setText(todo.title);
+                    description.setText(todo.description);
+                    if (todo.completed) {
+                        completed = true;
+                        checkBox.setImageResource(R.drawable.ic_check_box_black_24dp);
                     } else {
-                        // Write new todo
-                        Repository.INSTANCE().writeNewTodo(title.getText().toString(), description.getText().toString(), completed, todoKey);
-                    }
-
-                    setEditingEnabled(true);
-                    if (getActivity() != null) {
-                        getActivity().finish();
+                        completed = false;
+                        checkBox.setImageResource(R.drawable.ic_check_box_outline_blank_black_24dp);
                     }
                 }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
-                    Log.w(TAG, "getUser:onCancelled", databaseError.toException());
-                    setEditingEnabled(true);
-                }
-            };
-            Repository.INSTANCE().getQueryForUsers().addListenerForSingleValueEvent(userListener);
+            }
         }
     }
 
