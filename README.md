@@ -37,7 +37,7 @@ This project is maintained by:
 
 ## ToDo
 1. Implement clean architecture.
-2. Decouple Firebase sdk from the rest of the app.
+2. Remove Firebase dependencies from presentation layer.
 
 
 ## Contributing

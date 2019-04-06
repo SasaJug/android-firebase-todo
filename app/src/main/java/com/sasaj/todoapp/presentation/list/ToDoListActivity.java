@@ -1,5 +1,6 @@
 package com.sasaj.todoapp.presentation.list;
 
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -9,10 +10,21 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 
 import com.sasaj.todoapp.R;
-import com.sasaj.todoapp.data.Repository;
+import com.sasaj.todoapp.TodoApplication;
 import com.sasaj.todoapp.presentation.common.BaseActivity;
 import com.sasaj.todoapp.presentation.edit.EditToDoDetailActivity;
+import com.sasaj.todoapp.presentation.firebase.FirebaseUIUtil;
 import com.sasaj.todoapp.presentation.view.ToDoDetailActivity;
+
+import javax.inject.Inject;
+import javax.inject.Provider;
+
+import static com.sasaj.todoapp.presentation.list.ListViewState.COMPLETED;
+import static com.sasaj.todoapp.presentation.list.ListViewState.ERROR;
+import static com.sasaj.todoapp.presentation.list.ListViewState.LOADING;
+import static com.sasaj.todoapp.presentation.list.ListViewState.SUCCESS;
+
+;
 
 /**
  * An activity representing a list of ToDos. This activity
@@ -26,16 +38,22 @@ public class ToDoListActivity extends BaseActivity {
 
     private static final int RC_SIGN_IN = 101;
 
-    /**
-     * Whether or not the activity is in two-pane mode, i.e. running on a tablet
-     * device.
-     */
+    @Inject
+    ListVMFactory listVMFactory;
+
+    ListViewModel listViewModel;
+
+    @Inject
+    Provider<SimpleItemRecyclerViewAdapter> adapterProvider;
     private SimpleItemRecyclerViewAdapter adapter;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_todo_list);
+
+        ((TodoApplication) getApplication()).applicationComponent.inject(this);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -43,24 +61,21 @@ public class ToDoListActivity extends BaseActivity {
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(view -> {
-            overridePendingTransition(0,0);
+            overridePendingTransition(0, 0);
             Intent intent = new Intent(ToDoListActivity.this, EditToDoDetailActivity.class);
             startActivity(intent);
         });
 
-        if (Repository.INSTANCE().getCurrentUser() == null) {
-            startActivityForResult(
-                    Repository.INSTANCE().getAuthUIIntent(),
-                    RC_SIGN_IN);
-        }
+
+        listViewModel = ViewModelProviders.of(this, listVMFactory).get(ListViewModel.class);
+        listViewModel.listLiveData.observe(this, this::handleViewState);
+
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        if (Repository.INSTANCE().getCurrentUser() != null) {
-            setContent();
-        }
+        listViewModel.getCurrentUser();
     }
 
     @Override
@@ -78,11 +93,27 @@ public class ToDoListActivity extends BaseActivity {
         if (requestCode == RC_SIGN_IN) {
 
             if (resultCode == RESULT_OK) {
-                Repository.INSTANCE().addUserToDatabase();
-                setContent();
+                listViewModel.getCurrentUser();
             } else {
                 finish();
             }
+        }
+    }
+
+
+    private void handleViewState(ListViewState listViewState) {
+        int state = listViewState.state;
+        switch (state) {
+            case LOADING:
+                break;
+            case SUCCESS:
+                setContent();
+                break;
+            case ERROR:
+                startActivityForResult(FirebaseUIUtil.getAuthUIIntent(), RC_SIGN_IN);
+                break;
+            case COMPLETED:
+                break;
         }
     }
 
@@ -98,7 +129,7 @@ public class ToDoListActivity extends BaseActivity {
 
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
-        adapter = new SimpleItemRecyclerViewAdapter(Repository.INSTANCE().getToDoListOptions());
+        adapter = adapterProvider.get();
         recyclerView.setAdapter(adapter);
         adapter.startListening();
     }
